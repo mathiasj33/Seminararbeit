@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>NormalGame.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;NormalGameCode&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">net.softwarepage.facharbeit.normalgame.logic</a> &gt; <span class="el_source">NormalGame.java</span></div><h1>NormalGame.java</h1><pre class="source lang-java linenums">package net.softwarepage.facharbeit.normalgame.logic;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class NormalGame implements Serializable {
+
+    private final Matrix matrix;
+<span class="pc" id="L11">    private final DominantStrategyFinder dominantStrategyFinder = new DominantStrategyFinder(this);</span>
+<span class="pc" id="L12">    private final PureNashEquilibriumFinder pureNashFinder = new PureNashEquilibriumFinder(this);</span>
+<span class="pc" id="L13">    private final MixedNashEquilibriumFinder mixedNashFinder = new MixedNashEquilibriumFinder(this);</span>
+
+<span class="fc" id="L15">    public NormalGame(Player player1, Player player2) {</span>
+<span class="fc" id="L16">        matrix = new Matrix(player1, player2);</span>
+<span class="fc" id="L17">    }</span>
+
+<span class="nc" id="L19">    public NormalGame() {</span>
+<span class="nc" id="L20">        Player player1 = new Player(&quot;oben&quot;, &quot;unten&quot;);</span>
+<span class="nc" id="L21">        Player player2 = new Player(&quot;links&quot;, &quot;rechts&quot;);</span>
+<span class="nc" id="L22">        player1.setName(&quot;Spieler A&quot;);</span>
+<span class="nc" id="L23">        player2.setName(&quot;Spieler B&quot;);</span>
+<span class="nc" id="L24">        matrix = new Matrix(player1, player2);</span>
+<span class="nc" id="L25">        initDefaultVectors();</span>
+<span class="nc" id="L26">    }</span>
+
+    private void initDefaultVectors() {
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L30">            matrix.addField(new Vector(0, 0));</span>
+        }
+<span class="nc" id="L32">    }</span>
+
+    public void addStrategy(String name, Player player) {
+<span class="fc" id="L35">        List&lt;Strategy&gt; opponentStrategies = getOpponentStrategies(player);</span>
+<span class="fc" id="L36">        Strategy newStrategy = new Strategy(name);</span>
+<span class="fc" id="L37">        player.addStrategy(newStrategy);</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        for (Strategy opponentStrategy : opponentStrategies) {</span>
+            StrategyPair pair;
+<span class="fc bfc" id="L40" title="All 2 branches covered.">            if (player.equals(matrix.getPlayer1())) {</span>
+<span class="fc" id="L41">                pair = new StrategyPair(newStrategy, opponentStrategy);</span>
+            } else {
+<span class="fc" id="L43">                pair = new StrategyPair(opponentStrategy, newStrategy);</span>
+            }
+<span class="fc" id="L45">            matrix.setVector(pair, new Vector(0, 0));</span>
+<span class="fc" id="L46">        }</span>
+<span class="fc" id="L47">    }</span>
+
+    public void removeStrategy(String name, Player player) {
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (player.getStrategies().size() == 1) {</span>
+<span class="fc" id="L51">            throw new IllegalStateException(&quot;Trying to remove last strategy from a player&quot;);</span>
+        }
+<span class="fc" id="L53">        Strategy strategy = getStrategy(name, player);</span>
+<span class="fc" id="L54">        player.removeStrategy(strategy);</span>
+<span class="fc" id="L55">        List&lt;StrategyPair&gt; toRemove = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        for (StrategyPair pair : matrix.getVectors().keySet()) {</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            if (pair.contains(strategy)) {</span>
+<span class="fc" id="L58">                toRemove.add(pair);</span>
+            }
+<span class="fc" id="L60">        }</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        for (StrategyPair pair : toRemove) {</span>
+<span class="fc" id="L62">            matrix.removeVector(pair);</span>
+<span class="fc" id="L63">        }</span>
+<span class="fc" id="L64">    }</span>
+
+    public void renameStrategy(String oldName, String newName, Player player) {
+<span class="fc" id="L67">        Strategy strategy = getStrategy(oldName, player);</span>
+<span class="fc" id="L68">        strategy.setName(newName);</span>
+        try {
+<span class="fc" id="L70">            player.testStrategyNames(strategy);</span>
+<span class="nc" id="L71">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L72">            strategy.setName(oldName);</span>
+<span class="nc" id="L73">            throw new IllegalArgumentException(&quot;Same strategy twice!&quot;);</span>
+<span class="fc" id="L74">        }</span>
+<span class="fc" id="L75">    }</span>
+
+    public void addField(Vector payoff) {
+<span class="fc" id="L78">        matrix.addField(payoff);</span>
+<span class="fc" id="L79">    }</span>
+
+    public void setVector(StrategyPair pair, Vector vector) {
+<span class="nc" id="L82">        matrix.setVector(pair, vector);</span>
+<span class="nc" id="L83">    }</span>
+
+    public void clear() {
+<span class="nc" id="L86">        matrix.clear();</span>
+<span class="nc" id="L87">        mixedNashFinder.clear();</span>
+<span class="nc" id="L88">    }</span>
+
+    public Vector getVector(Strategy firstStrategy, Strategy secondStrategy) {
+<span class="fc" id="L91">        return matrix.getVector(firstStrategy, secondStrategy);</span>
+    }
+
+    public Strategy getStrategy(String name, Player player) {
+<span class="fc" id="L95">        return matrix.getStrategy(name, player);</span>
+    }
+
+    public List&lt;Strategy&gt; getOpponentStrategies(Player player) {
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (player.equals(matrix.getPlayer1())) {</span>
+<span class="fc" id="L100">            return matrix.getPlayer2().getStrategies();</span>
+        } else {
+<span class="fc" id="L102">            return matrix.getPlayer1().getStrategies();</span>
+        }
+    }
+
+    public boolean isZeroSumGame() {
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        for (Vector vector : matrix.getVectors().values()) {</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">            if (vector.getFirst() + vector.getSecond() != 0) {</span>
+<span class="nc" id="L109">                return false;</span>
+            }
+<span class="fc" id="L111">        }</span>
+<span class="fc" id="L112">        return true;</span>
+    }
+
+    public float getPayoff(Player player, Strategy strategy1, Strategy strategy2) {
+<span class="fc" id="L116">        Vector payoff = matrix.getVector(strategy1, strategy2);</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (player.equals(matrix.getPlayer1())) {</span>
+<span class="fc" id="L118">            return payoff.getFirst();</span>
+        } else {
+<span class="fc" id="L120">            return payoff.getSecond();</span>
+        }
+    }
+    
+    public List&lt;Float&gt; getPayoffsForOpponentStrategy(Player player, Strategy opponentStrategy) {
+<span class="fc" id="L125">        List&lt;Strategy&gt; ownStrats = player.getStrategies();</span>
+<span class="fc" id="L126">        List&lt;Float&gt; values = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L127">        ownStrats.forEach((ownStrat) -&gt; {</span>
+<span class="fc" id="L128">            values.add(getPayoff(player, ownStrat, opponentStrategy));</span>
+<span class="fc" id="L129">        });</span>
+<span class="fc" id="L130">        return values;</span>
+    }
+
+    public Player getPlayer1() {
+<span class="fc" id="L134">        return matrix.getPlayer1();</span>
+    }
+
+    public Player getPlayer2() {
+<span class="fc" id="L138">        return matrix.getPlayer2();</span>
+    }
+
+    public Map&lt;StrategyPair, Vector&gt; getVectors() {
+<span class="nc" id="L142">        return matrix.getVectors();</span>
+    }
+    
+    public List&lt;Strategy&gt; findDominatedStrategies(Player player) {
+<span class="fc" id="L146">        return dominantStrategyFinder.findDominatedStrategy(player);</span>
+    }
+    
+    public List&lt;PureNashEquilibrium&gt; findPureNashEquilibrium() {
+<span class="fc" id="L150">        return pureNashFinder.findPureNashEquilibria();</span>
+    }
+
+    public MixedNashEquilibrium findMixedNashEquilibrium() {
+<span class="fc" id="L154">        return mixedNashFinder.findMixedNashEquilibrium();</span>
+    }
+    
+    public List&lt;NormalGame&gt; getSubGames2x2() {
+<span class="fc" id="L158">        return mixedNashFinder.getSubGames2x2();</span>
+    }
+    
+    public boolean isSubGameEquilibriumValid(NormalGame subGame) {
+<span class="fc" id="L162">        return mixedNashFinder.isSubGameEquilibriumValid(subGame);</span>
+    }
+
+    public Vector getMixedPayoff(String strat, Player player) {
+<span class="fc" id="L166">        return mixedNashFinder.getMixedPayoff(strat, player);</span>
+    }
+
+    public Vector getOptimalMixedPayoff() {
+<span class="fc" id="L170">        return mixedNashFinder.getOptimalMixedPayoff();</span>
+    }
+
+    public void print() {
+<span class="nc" id="L174">        System.out.println(matrix);</span>
+<span class="nc" id="L175">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

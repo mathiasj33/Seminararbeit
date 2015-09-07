@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>NormalGame.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;Nash&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">nash</a> &gt; <span class="el_source">NormalGame.java</span></div><h1>NormalGame.java</h1><pre class="source lang-java linenums">package nash;
+
+import helpers.ListHelper;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+/**
+ *
+ * @author Mathias
+ */
+public class NormalGame implements Game {
+
+    private Matrix matrix;
+    private final Player player1;
+    private final Player player2;
+    private HashMap&lt;Strategy, Float&gt; finalProbabilities;
+
+<span class="fc" id="L20">    public NormalGame(Player player1, Player player2) {</span>
+<span class="fc" id="L21">        this.player1 = player1;</span>
+<span class="fc" id="L22">        this.player2 = player2;</span>
+<span class="fc" id="L23">        matrix = new Matrix(player1.getStrategies(), player2.getStrategies());</span>
+<span class="fc" id="L24">    }</span>
+    
+<span class="nc" id="L26">    public NormalGame() {</span>
+<span class="nc" id="L27">        player1 = new Player(&quot;oben&quot;, &quot;unten&quot;);</span>
+<span class="nc" id="L28">        player2 = new Player(&quot;links&quot;, &quot;rechts&quot;);</span>
+<span class="nc" id="L29">        matrix = new Matrix(player1.getStrategies(), player2.getStrategies());</span>
+<span class="nc" id="L30">        initDefaultVectors();</span>
+<span class="nc" id="L31">    }</span>
+
+    private void initDefaultVectors() {
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L35">            matrix.addField(new Vector(0, 0));</span>
+        }
+<span class="nc" id="L37">    }</span>
+
+    public void setStrategies(List&lt;Strategy&gt; firstStrategies, List&lt;Strategy&gt; secondStrategies) {
+<span class="nc" id="L40">        matrix = new Matrix(firstStrategies, secondStrategies);</span>
+<span class="nc" id="L41">    }</span>
+
+    public void addField(Vector payoff) {
+<span class="fc" id="L44">        matrix.addField(payoff);</span>
+<span class="fc" id="L45">    }</span>
+
+    public void clear() {
+<span class="fc" id="L48">        matrix.clear();</span>
+<span class="fc" id="L49">        finalProbabilities = null;</span>
+<span class="fc" id="L50">    }</span>
+
+    public Vector getVector(Strategy firstStrategy, Strategy secondStrategy) {
+<span class="fc" id="L53">        return matrix.getVector(firstStrategy, secondStrategy);</span>
+    }
+
+    public Strategy getStrategy(String name, Player player) {
+<span class="fc" id="L57">        return matrix.getStrategy(name, player);</span>
+    }
+
+    public void removeStrategy(String name, Player player) {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (player.getStrategies().size() == 1) {</span>
+<span class="fc" id="L62">            throw new IllegalStateException(&quot;Trying to remove last strategy from a player&quot;);</span>
+        }
+<span class="fc" id="L64">        matrix.removeStrategy(name, player);</span>
+<span class="fc" id="L65">    }</span>
+
+    private List&lt;Strategy&gt; getOpponentStrategies(Player player) {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (player.equals(player1)) {</span>
+<span class="fc" id="L69">            return player2.getStrategies();</span>
+        } else {
+<span class="fc" id="L71">            return player1.getStrategies();</span>
+        }
+    }
+
+    public List&lt;Strategy&gt; findDominatedStrategies(Player player) {  //Dann alle Matrix-Funktionen (Mehrspieler?).  Dann Flussdiagramm. Dann Javafx. Dann anfangen zu schreiben (?).
+<span class="fc" id="L76">        List&lt;Strategy&gt; ownStrategies = player.getStrategies();</span>
+<span class="fc" id="L77">        List&lt;Strategy&gt; opponentStrategies = getOpponentStrategies(player);</span>
+<span class="fc" id="L78">        List&lt;Strategy&gt; dominatedStrategies = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        for (Strategy ownStrategy : ownStrategies) {</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            for (Strategy ownStrategy2 : ownStrategies) {</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">                if (ownStrategy.equals(ownStrategy2)) {</span>
+<span class="fc" id="L82">                    continue;</span>
+                }
+<span class="fc" id="L84">                boolean weaklyDominated = false;</span>
+<span class="fc" id="L85">                List&lt;Strategy&gt; possiblyDominated = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">                for (Strategy opponentStrategy : opponentStrategies) {</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                    if (payoffIsLess(player, ownStrategy, ownStrategy2, opponentStrategy)) {</span>
+<span class="fc" id="L88">                        possiblyDominated.add(ownStrategy);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">                    } else if (payoffIsLess(player, ownStrategy2, ownStrategy, opponentStrategy)) {</span>
+<span class="fc" id="L90">                        possiblyDominated.add(ownStrategy2);</span>
+                    } else {
+<span class="fc" id="L92">                        weaklyDominated = true;</span>
+                    }
+<span class="fc" id="L94">                }</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">                if (ListHelper.isListOfSameElements(possiblyDominated)) {</span>
+<span class="fc" id="L96">                    Strategy dominatedStrat = possiblyDominated.get(0);</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">                    if (!dominatedStrategies.contains(dominatedStrat)) {</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">                        StrategyType type = weaklyDominated ? StrategyType.WeaklyDominated : StrategyType.Dominated;</span>
+<span class="fc" id="L99">                        dominatedStrat.setType(type);</span>
+<span class="fc" id="L100">                        dominatedStrategies.add(dominatedStrat);</span>
+                    }
+                }
+<span class="fc" id="L103">            }</span>
+<span class="fc" id="L104">        }</span>
+<span class="fc" id="L105">        return dominatedStrategies;</span>
+    }
+
+    public boolean isZeroSumGame() {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (Vector vector : matrix.getVectors().values()) {</span>
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">            if (vector.getFirst() + vector.getSecond() != 0) {</span>
+<span class="nc" id="L111">                return false;</span>
+            }
+<span class="fc" id="L113">        }</span>
+<span class="fc" id="L114">        return true;</span>
+    }
+
+    public ArrayList&lt;NashEquilibrium&gt; calculateAllNashEquilibria() {
+<span class="fc" id="L118">        ArrayList&lt;NashEquilibrium&gt; equilibria = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L119">        equilibria.addAll(calculateNash());</span>
+<span class="fc" id="L120">        equilibria.add(calculateNashWithMixedStrategies());</span>
+<span class="fc" id="L121">        return equilibria;</span>
+    }
+
+    @Override
+    public ArrayList&lt;NashEquilibrium&gt; calculateNash() {
+<span class="fc" id="L126">        ArrayList&lt;StrategyPair&gt; firstPairs = getPlayedStrategyPairs(player1);</span>
+<span class="fc" id="L127">        ArrayList&lt;StrategyPair&gt; secondPairs = getPlayedStrategyPairs(player2);</span>
+<span class="fc" id="L128">        firstPairs.retainAll(secondPairs);</span>
+<span class="fc" id="L129">        ArrayList&lt;NashEquilibrium&gt; nes = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        for (StrategyPair pair : firstPairs) {</span>
+<span class="fc" id="L131">            nes.add(createEquilibrium(pair));</span>
+<span class="fc" id="L132">        }</span>
+<span class="fc" id="L133">        return nes;</span>
+    }
+
+    private ArrayList&lt;StrategyPair&gt; getPlayedStrategyPairs(Player player) {
+<span class="fc" id="L137">        List&lt;Strategy&gt; ownStrategies = player.getStrategies();</span>
+<span class="fc" id="L138">        List&lt;Strategy&gt; opponentStrategies = getOpponentStrategies(player);</span>
+
+<span class="fc" id="L140">        ArrayList&lt;StrategyPair&gt; playedStrategyPairs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        for (Strategy opponentStrategy : opponentStrategies) {</span>
+<span class="fc" id="L142">            float maximum = getMaximumPayoff(player, opponentStrategy);</span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">            for (Strategy ownStrategy : ownStrategies) {</span>
+<span class="fc" id="L144">                float payoff = getPayoff(player, ownStrategy, opponentStrategy);</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">                if (payoff == maximum) {</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">                    if (player.equals(player1)) {</span>
+<span class="fc" id="L147">                        playedStrategyPairs.add(StrategyPair.fromTwoStrategies(ownStrategy, opponentStrategy));</span>
+                    } else {
+<span class="fc" id="L149">                        playedStrategyPairs.add(StrategyPair.fromTwoStrategies(opponentStrategy, ownStrategy));</span>
+                    }
+                }
+<span class="fc" id="L152">            }</span>
+<span class="fc" id="L153">        }</span>
+<span class="fc" id="L154">        return playedStrategyPairs;</span>
+    }
+
+    private float getPayoff(Player player, Strategy strategy1, Strategy strategy2) {
+<span class="fc" id="L158">        Vector payoff = matrix.getVector(strategy1, strategy2);</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (player.equals(player1)) {</span>
+<span class="fc" id="L160">            return payoff.getFirst();</span>
+        } else {
+<span class="fc" id="L162">            return payoff.getSecond();</span>
+        }
+    }
+
+    @Override
+    public NashEquilibrium calculateNashWithMixedStrategies() {
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        if (finalProbabilities != null) {</span>
+<span class="nc" id="L169">            finalProbabilities.clear();</span>
+        }
+<span class="fc" id="L171">        calculateProbabilities(player1);</span>
+<span class="fc" id="L172">        calculateProbabilities(player2);</span>
+<span class="fc" id="L173">        Strategy optimum1 = new Strategy(&quot;Optimal gemischt&quot;);</span>
+<span class="fc" id="L174">        Strategy optimum2 = new Strategy(&quot;Optimal gemischt&quot;);</span>
+<span class="fc" id="L175">        player1.getStrategies().add(optimum1);</span>
+<span class="fc" id="L176">        player2.getStrategies().add(optimum2);</span>
+<span class="fc" id="L177">        calculateNewMixedPayoffs(player1);</span>
+<span class="fc" id="L178">        calculateNewMixedPayoffs(player2);</span>
+<span class="fc" id="L179">        float aPayoff = getOptimalMixedPayoff(player1);</span>
+<span class="fc" id="L180">        float bPayoff = getOptimalMixedPayoff(player2);</span>
+<span class="fc" id="L181">        StrategyPair optimalPair = StrategyPair.fromTwoStrategies(optimum1, optimum2);</span>
+<span class="fc" id="L182">        matrix.getVectors().put(optimalPair, new Vector(aPayoff, bPayoff));</span>
+<span class="fc" id="L183">        return createEquilibrium(optimalPair);</span>
+    }
+
+    private void calculateProbabilities(Player player) {
+<span class="fc" id="L187">        HashMap&lt;Strategy, Float&gt; localProbabilities = calculateEvenProbabilities(player);</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        if (finalProbabilities == null) {</span>
+<span class="fc" id="L189">            finalProbabilities = new HashMap&lt;&gt;();</span>
+        }
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">        for (int i = 0; i &lt; 1000000; i++) {</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">            for (Strategy strat : localProbabilities.keySet()) {</span>
+<span class="fc" id="L193">                ArrayList&lt;Float&gt; payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);</span>
+<span class="fc" id="L194">                float difference = getMaxDifference(payoffs);</span>
+<span class="pc bpc" id="L195" title="1 of 6 branches missed.">                if (difference == 0.0f || difference &gt; -.01f &amp;&amp; difference &lt; .01f) {</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">                    for (Strategy probStrat : localProbabilities.keySet()) {</span>
+<span class="fc" id="L197">                        finalProbabilities.put(probStrat, round(localProbabilities.get(probStrat), 1));</span>
+<span class="fc" id="L198">                    }</span>
+<span class="fc" id="L199">                    return;</span>
+                } else {
+<span class="fc" id="L201">                    localProbabilities = addProbability(localProbabilities, strat, .001f);</span>
+<span class="fc" id="L202">                    payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">                    if (getMaxDifference(payoffs) &gt; difference) {</span>
+<span class="fc" id="L204">                        localProbabilities = addProbability(localProbabilities, strat, -.002f);</span>
+                    }
+                }
+<span class="fc" id="L207">            }</span>
+        }
+<span class="nc" id="L209">    }</span>
+
+    private void calculateNewMixedPayoffs(Player player) {
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">        if (finalProbabilities == null) {</span>
+<span class="nc" id="L213">            return;</span>
+        }
+<span class="fc" id="L215">        List&lt;Strategy&gt; ownStrats = player.getStrategies();</span>
+<span class="fc" id="L216">        List&lt;Strategy&gt; otherStrats = getOpponentStrategies(player);</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        for (Strategy otherStrat : otherStrats) {</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">            if (otherStrat.getName().equals(&quot;Optimal gemischt&quot;)) {</span>
+<span class="fc" id="L219">                continue;</span>
+            }
+<span class="fc" id="L221">            float aPayoff = 0;</span>
+<span class="fc" id="L222">            float bPayoff = 0;</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">            for (Strategy ownStrat : ownStrats) {</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">                if (ownStrat.getName().equals(&quot;Optimal gemischt&quot;)) {</span>
+<span class="fc" id="L225">                    continue;</span>
+                }
+<span class="fc" id="L227">                aPayoff += getPayoff(player1, ownStrat, otherStrat) * finalProbabilities.get(ownStrat) / 100;</span>
+<span class="fc" id="L228">                bPayoff += getPayoff(player2, ownStrat, otherStrat) * finalProbabilities.get(ownStrat) / 100;</span>
+<span class="fc" id="L229">            }</span>
+<span class="fc" id="L230">            aPayoff = round(aPayoff, 2);</span>
+<span class="fc" id="L231">            bPayoff = round(bPayoff, 2);</span>
+<span class="fc bfc" id="L232" title="All 2 branches covered.">            if (player.equals(player1)) {</span>
+<span class="fc" id="L233">                matrix.getVectors().put(StrategyPair.fromTwoStrategies(ownStrats.get(ownStrats.size() - 1), otherStrat), new Vector(aPayoff, bPayoff));</span>
+            } else {
+<span class="fc" id="L235">                matrix.getVectors().put(StrategyPair.fromTwoStrategies(otherStrat, ownStrats.get(ownStrats.size() - 1)), new Vector(aPayoff, bPayoff));</span>
+            }
+<span class="fc" id="L237">        }</span>
+<span class="fc" id="L238">    }</span>
+
+    private float round(float value, int numberOfDecimals) {
+<span class="fc" id="L241">        int decimalValue = (int) Math.pow(10, numberOfDecimals);</span>
+<span class="fc" id="L242">        return (float) Math.round(value * decimalValue) / decimalValue;</span>
+    }
+
+    private float getOptimalMixedPayoff(Player player) {
+<span class="pc bpc" id="L246" title="1 of 2 branches missed.">        if (finalProbabilities == null) {</span>
+<span class="nc" id="L247">            return 0;</span>
+        }
+<span class="fc" id="L249">        List&lt;Strategy&gt; ownStrats = player.getStrategies();</span>
+<span class="fc" id="L250">        List&lt;Strategy&gt; otherStrats = getOpponentStrategies(player);</span>
+<span class="fc" id="L251">        float payoff = 0;</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">        for (Strategy otherStrat : otherStrats) {</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">            if (otherStrat.getName().equals(&quot;Optimal gemischt&quot;)) {</span>
+<span class="fc" id="L254">                continue;</span>
+            }
+<span class="fc bfc" id="L256" title="All 2 branches covered.">            for (Strategy ownStrat : ownStrats) {</span>
+<span class="fc bfc" id="L257" title="All 2 branches covered.">                if (ownStrat.getName().equals(&quot;Optimal gemischt&quot;)) {</span>
+<span class="fc" id="L258">                    continue;</span>
+                }
+<span class="fc" id="L260">                float otherProbability = (finalProbabilities.get(otherStrat) / 100);</span>
+<span class="fc" id="L261">                float ownProbability = (finalProbabilities.get(ownStrat) / 100);</span>
+<span class="fc" id="L262">                payoff += otherProbability * ownProbability * getPayoff(player, ownStrat, otherStrat);</span>
+<span class="fc" id="L263">            }</span>
+<span class="fc" id="L264">        }</span>
+<span class="fc" id="L265">        return round(payoff, 1);</span>
+    }
+
+    private ArrayList&lt;Float&gt; getMixedPayoffsOfOtherPlayer(HashMap&lt;Strategy, Float&gt; localProbabilities, Player player) {
+<span class="fc" id="L269">        List&lt;Strategy&gt; ownStrategies = player.getStrategies();</span>
+<span class="fc" id="L270">        List&lt;Strategy&gt; otherStrategies = getOpponentStrategies(player);</span>
+<span class="fc" id="L271">        ArrayList&lt;Float&gt; payoffs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">        for (Strategy otherStrategy : otherStrategies) {</span>
+<span class="fc" id="L273">            float payoff = 0;</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">            for (Strategy ownStrategy : ownStrategies) {</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">                if (player.equals(player1)) {</span>
+<span class="fc" id="L276">                    payoff += (matrix.getVector(ownStrategy, otherStrategy).getSecond()) * localProbabilities.get(ownStrategy);</span>
+                } else {
+<span class="fc" id="L278">                    payoff += (matrix.getVector(ownStrategy, otherStrategy).getFirst()) * localProbabilities.get(ownStrategy);</span>
+                }
+<span class="fc" id="L280">            }</span>
+<span class="fc" id="L281">            payoffs.add(payoff);</span>
+<span class="fc" id="L282">        }</span>
+<span class="fc" id="L283">        return payoffs;</span>
+    }
+    
+    public void print() {
+<span class="nc" id="L287">        matrix.printVectors();</span>
+<span class="nc" id="L288">    }</span>
+
+    private float getMaximumPayoff(Player player, Strategy opponentStrategy) {
+<span class="fc" id="L291">        List&lt;Strategy&gt; ownStrategies = player.getStrategies();</span>
+<span class="fc" id="L292">        ArrayList&lt;Float&gt; payoffs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L293" title="All 2 branches covered.">        for (Strategy ownStrategy : ownStrategies) {</span>
+<span class="fc" id="L294">            payoffs.add(getPayoff(player, ownStrategy, opponentStrategy));</span>
+<span class="fc" id="L295">        }</span>
+<span class="fc" id="L296">        return Collections.max(payoffs);</span>
+    }
+
+    private float getMaxDifference(ArrayList&lt;Float&gt; floats) {
+<span class="fc" id="L300">        ArrayList&lt;Float&gt; differences = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">        for (int i = 0; i &lt; floats.size(); i++) {</span>
+<span class="fc bfc" id="L302" title="All 2 branches covered.">            for (int j = 0; j &lt; floats.size(); j++) {</span>
+<span class="fc" id="L303">                differences.add(Math.abs(floats.get(i) - floats.get(j)));</span>
+            }
+        }
+<span class="fc" id="L306">        return Collections.max(differences);</span>
+    }
+
+    private HashMap&lt;Strategy, Float&gt; calculateEvenProbabilities(Player player) {
+<span class="fc" id="L310">        List&lt;Strategy&gt; ownStrats = player.getStrategies();</span>
+<span class="fc" id="L311">        HashMap&lt;Strategy, Float&gt; localProbabilities = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L312" title="All 2 branches covered.">        for (Strategy ownStrat : ownStrats) {</span>
+<span class="fc" id="L313">            localProbabilities.put(ownStrat, (float) (1 / (float) ownStrats.size()) * 100);</span>
+<span class="fc" id="L314">        };</span>
+<span class="fc" id="L315">        return localProbabilities;</span>
+    }
+
+    private HashMap&lt;Strategy, Float&gt; addProbability(HashMap&lt;Strategy, Float&gt; localProbabilities, Strategy strat, float percentage) {
+<span class="fc" id="L319">        localProbabilities.put(strat, localProbabilities.get(strat) + percentage);</span>
+<span class="fc bfc" id="L320" title="All 2 branches covered.">        for (Strategy s : localProbabilities.keySet()) {</span>
+<span class="fc bfc" id="L321" title="All 2 branches covered.">            if (strat.equals(s)) {</span>
+<span class="fc" id="L322">                continue;</span>
+            }
+<span class="fc" id="L324">            localProbabilities.put(s, localProbabilities.get(s) - percentage / (float) (localProbabilities.keySet().size() - 1));</span>
+<span class="fc" id="L325">        }</span>
+<span class="fc" id="L326">        return localProbabilities;</span>
+    }
+
+    private NashEquilibrium createEquilibrium(StrategyPair strategyPair) {
+<span class="fc" id="L330">        NashEquilibrium equilibrium = new NashEquilibrium(strategyPair.getFirstStrategy(), strategyPair.getSecondStrategy());</span>
+<span class="fc bfc" id="L331" title="All 2 branches covered.">        NashEquilibriumType type = isStrict(equilibrium) ? NashEquilibriumType.Strict : NashEquilibriumType.NonStrict;</span>
+<span class="fc" id="L332">        equilibrium.setType(type);</span>
+<span class="fc" id="L333">        return equilibrium;</span>
+    }
+
+    private boolean isStrict(NashEquilibrium equilibrium) {
+<span class="fc" id="L337">        ArrayList&lt;Float&gt; firstPayoffs = getPayoffsForOpponentStrategy(player2, equilibrium.getFirstStrat());</span>
+<span class="fc" id="L338">        float payoff = Collections.max(firstPayoffs);</span>
+<span class="fc bfc" id="L339" title="All 2 branches covered.">        if (Collections.frequency(firstPayoffs, payoff) &gt; 1) {</span>
+<span class="fc" id="L340">            return false;</span>
+        }
+<span class="fc" id="L342">        ArrayList&lt;Float&gt; secondPayoffs = getPayoffsForOpponentStrategy(player1, equilibrium.getSecondStrat());</span>
+<span class="fc" id="L343">        payoff = Collections.max(secondPayoffs);</span>
+<span class="fc bfc" id="L344" title="All 2 branches covered.">        if (Collections.frequency(secondPayoffs, payoff) &gt; 1) {</span>
+<span class="fc" id="L345">            return false;</span>
+        }
+<span class="fc" id="L347">        return true;</span>
+    }
+
+    private ArrayList&lt;Float&gt; getPayoffsForOpponentStrategy(Player player, Strategy opponentStrategy) {
+<span class="fc" id="L351">        List&lt;Strategy&gt; ownStrats = player.getStrategies();</span>
+<span class="fc" id="L352">        ArrayList&lt;Float&gt; values = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L353" title="All 2 branches covered.">        for (Strategy ownStrat : ownStrats) {</span>
+<span class="fc" id="L354">            values.add(getPayoff(player, ownStrat, opponentStrategy));</span>
+<span class="fc" id="L355">        }</span>
+<span class="fc" id="L356">        return values;</span>
+    }
+
+    private boolean payoffIsLess(Player player, Strategy firstStrategy, Strategy firstStrategy2, Strategy secondStrategy) {
+<span class="fc bfc" id="L360" title="All 2 branches covered.">        return getPayoff(player, firstStrategy, secondStrategy) &lt; getPayoff(player, firstStrategy2, secondStrategy);</span>
+    }
+
+    public Float getProbability(String strategyName, Player player) {
+<span class="pc bpc" id="L364" title="1 of 2 branches missed.">        if (finalProbabilities == null) {</span>
+<span class="nc" id="L365">            return null;</span>
+        }
+<span class="fc" id="L367">        List&lt;Strategy&gt; ownStrategies = player.getStrategies();</span>
+<span class="pc bpc" id="L368" title="1 of 2 branches missed.">        for (Strategy strat : ownStrategies) {</span>
+<span class="pc bpc" id="L369" title="1 of 2 branches missed.">            if (strat.getName().equals(strategyName)) {</span>
+<span class="fc" id="L370">                return finalProbabilities.get(strat);</span>
+            }
+<span class="nc" id="L372">        }</span>
+<span class="nc" id="L373">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

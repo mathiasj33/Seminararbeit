@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ListHelper.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;NormalGameCode&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">net.softwarepage.facharbeit.normalgame.helpers</a> &gt; <span class="el_source">ListHelper.java</span></div><h1>ListHelper.java</h1><pre class="source lang-java linenums">package net.softwarepage.facharbeit.normalgame.helpers;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+<span class="nc" id="L8">public class ListHelper {</span>
+    public static boolean isListOfSameElements(List&lt;? extends Object&gt; list) {
+<span class="fc" id="L10">        Set&lt;Object&gt; set = new HashSet&lt;&gt;(list.size());</span>
+<span class="fc bfc" id="L11" title="All 2 branches covered.">        for (Object o : list) {</span>
+<span class="fc bfc" id="L12" title="All 2 branches covered.">            if (set.isEmpty()) {</span>
+<span class="fc" id="L13">                set.add(o);</span>
+            } else {
+<span class="fc bfc" id="L15" title="All 2 branches covered.">                if (set.add(o)) {</span>
+<span class="fc" id="L16">                    return false;</span>
+                }
+            }
+<span class="fc" id="L19">        }</span>
+<span class="fc" id="L20">        return true;</span>
+    }
+    
+    public static boolean isElementTwice(List&lt;? extends Object&gt; list) {
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        return list.stream().anyMatch((o) -&gt; (Collections.frequency(list, o) &gt; 1));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

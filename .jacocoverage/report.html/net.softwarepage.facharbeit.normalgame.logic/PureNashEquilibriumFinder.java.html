@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PureNashEquilibriumFinder.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;NormalGameCode&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">net.softwarepage.facharbeit.normalgame.logic</a> &gt; <span class="el_source">PureNashEquilibriumFinder.java</span></div><h1>PureNashEquilibriumFinder.java</h1><pre class="source lang-java linenums">package net.softwarepage.facharbeit.normalgame.logic;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class PureNashEquilibriumFinder {
+    
+    private final NormalGame game;
+
+<span class="fc" id="L11">    public PureNashEquilibriumFinder(NormalGame game) {</span>
+<span class="fc" id="L12">        this.game = game;</span>
+<span class="fc" id="L13">    }</span>
+    
+    public List&lt;PureNashEquilibrium&gt; findPureNashEquilibria() {
+<span class="fc" id="L16">        List&lt;StrategyPair&gt; firstPairs = getPlayedStrategyPairs(game.getPlayer1());</span>
+<span class="fc" id="L17">        List&lt;StrategyPair&gt; secondPairs = getPlayedStrategyPairs(game.getPlayer2());</span>
+<span class="fc" id="L18">        firstPairs.retainAll(secondPairs);</span>
+<span class="fc" id="L19">        List&lt;PureNashEquilibrium&gt; nes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L20">        firstPairs.forEach((pair) -&gt; {</span>
+<span class="fc" id="L21">            nes.add(createNormalEquilibrium(pair));</span>
+<span class="fc" id="L22">        });</span>
+<span class="fc" id="L23">        return nes;</span>
+    } 
+    
+    private List&lt;StrategyPair&gt; getPlayedStrategyPairs(Player player) {
+<span class="fc" id="L27">        List&lt;Strategy&gt; ownStrategies = player.getStrategies();</span>
+<span class="fc" id="L28">        List&lt;Strategy&gt; opponentStrategies = game.getOpponentStrategies(player);</span>
+
+<span class="fc" id="L30">        List&lt;StrategyPair&gt; playedStrategyPairs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        for (Strategy opponentStrategy : opponentStrategies) {</span>
+<span class="fc" id="L32">            float maximum = getMaximumPayoff(player, opponentStrategy);</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">            for (Strategy ownStrategy : ownStrategies) {</span>
+<span class="fc" id="L34">                float payoff = game.getPayoff(player, ownStrategy, opponentStrategy);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">                if (payoff == maximum) {</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">                    if (player.equals(game.getPlayer1())) {</span>
+<span class="fc" id="L37">                        playedStrategyPairs.add(new StrategyPair(ownStrategy, opponentStrategy));</span>
+                    } else {
+<span class="fc" id="L39">                        playedStrategyPairs.add(new StrategyPair(opponentStrategy, ownStrategy));</span>
+                    }
+                }
+<span class="fc" id="L42">            }</span>
+<span class="fc" id="L43">        }</span>
+<span class="fc" id="L44">        return playedStrategyPairs;</span>
+    }
+    
+    private float getMaximumPayoff(Player player, Strategy opponentStrategy) {
+<span class="fc" id="L48">        List&lt;Strategy&gt; ownStrategies = player.getStrategies();</span>
+<span class="fc" id="L49">        List&lt;Float&gt; payoffs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        for (Strategy ownStrategy : ownStrategies) {</span>
+<span class="fc" id="L51">            payoffs.add(game.getPayoff(player, ownStrategy, opponentStrategy));</span>
+<span class="fc" id="L52">        }</span>
+<span class="fc" id="L53">        return Collections.max(payoffs);</span>
+    }
+    
+    private PureNashEquilibrium createNormalEquilibrium(StrategyPair strategyPair) {
+<span class="fc" id="L57">        PureNashEquilibrium equilibrium = new PureNashEquilibrium(strategyPair.getStrategy1(), strategyPair.getStrategy2());</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        NashEquilibriumType type = isStrict(equilibrium) ? NashEquilibriumType.Strict : NashEquilibriumType.NotStrict;</span>
+<span class="fc" id="L59">        equilibrium.setType(type);</span>
+<span class="fc" id="L60">        return equilibrium;</span>
+    }
+    
+    private boolean isStrict(PureNashEquilibrium equilibrium) {
+<span class="fc" id="L64">        List&lt;Float&gt; firstPayoffs = game.getPayoffsForOpponentStrategy(game.getPlayer2(), equilibrium.getFirstStrat());</span>
+<span class="fc" id="L65">        float maxPayoff = Collections.max(firstPayoffs);</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (Collections.frequency(firstPayoffs, maxPayoff) &gt; 1) {</span>
+<span class="nc" id="L67">            return false;</span>
+        }
+<span class="fc" id="L69">        List&lt;Float&gt; secondPayoffs = game.getPayoffsForOpponentStrategy(game.getPlayer1(), equilibrium.getSecondStrat());</span>
+<span class="fc" id="L70">        maxPayoff = Collections.max(secondPayoffs);</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (Collections.frequency(secondPayoffs, maxPayoff) &gt; 1) {</span>
+<span class="fc" id="L72">            return false;</span>
+        }
+<span class="fc" id="L74">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

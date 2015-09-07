@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Vector.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCoverage analysis of project &quot;NormalGameCode&quot; (powered by JaCoCo from EclEmma)</a> &gt; <a href="index.source.html" class="el_package">net.softwarepage.facharbeit.normalgame.logic</a> &gt; <span class="el_source">Vector.java</span></div><h1>Vector.java</h1><pre class="source lang-java linenums">package net.softwarepage.facharbeit.normalgame.logic;
+
+import java.io.Serializable;
+
+public class Vector implements Serializable {
+    
+    private float first;
+    private float second;
+
+<span class="fc" id="L10">    public Vector(float first, float second) {</span>
+<span class="fc" id="L11">        this.first = first;</span>
+<span class="fc" id="L12">        this.second = second;</span>
+<span class="fc" id="L13">    }</span>
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L17">        return first + &quot;;&quot; + second;</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L22">        int hash = 7;</span>
+<span class="nc" id="L23">        hash = 19 * hash + Float.floatToIntBits(this.first);</span>
+<span class="nc" id="L24">        hash = 19 * hash + Float.floatToIntBits(this.second);</span>
+<span class="nc" id="L25">        return hash;</span>
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        if (obj == null) {</span>
+<span class="nc" id="L31">            return false;</span>
+        }
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        if (getClass() != obj.getClass()) {</span>
+<span class="nc" id="L34">            return false;</span>
+        }
+<span class="fc" id="L36">        final Vector other = (Vector) obj;</span>
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">        if (Float.floatToIntBits(this.first) != Float.floatToIntBits(other.first)) {</span>
+<span class="nc" id="L38">            return false;</span>
+        }
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (Float.floatToIntBits(this.second) != Float.floatToIntBits(other.second)) {</span>
+<span class="nc" id="L41">            return false;</span>
+        }
+<span class="fc" id="L43">        return true;</span>
+    }
+
+    public float getFirst() {
+<span class="fc" id="L47">        return first;</span>
+    }
+
+    public float getSecond() {
+<span class="fc" id="L51">        return second;</span>
+    }
+
+    public void setFirst(float first) {
+<span class="nc" id="L55">        this.first = first;</span>
+<span class="nc" id="L56">    }</span>
+
+    public void setSecond(float second) {
+<span class="nc" id="L59">        this.second = second;</span>
+<span class="nc" id="L60">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
