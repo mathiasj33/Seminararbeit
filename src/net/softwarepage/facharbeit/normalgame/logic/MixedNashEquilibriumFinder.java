@@ -7,14 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+import net.softwarepage.facharbeit.normalgame.helpers.ListHelper;
 import net.softwarepage.facharbeit.normalgame.helpers.MathHelper;
 
 public class MixedNashEquilibriumFinder implements Serializable {
 
     private final NormalGame game;
-    private TreeMap<Strategy, Float> finalProbabilities;
+    private Map<Strategy, Float> localProbabilities;
+    private Map<Strategy, Float> finalProbabilities;
 
     public MixedNashEquilibriumFinder(NormalGame game) {
         this.game = game;
@@ -26,8 +26,27 @@ public class MixedNashEquilibriumFinder implements Serializable {
         }
     }
 
-    public List<MixedNashEquilibrium> findMixedNashEquilibria() { //Hier auch eine Liste herausgeben - Alle NashGleichgewichte, bei Klick soll sich matrixdarstellung verändern (optimale strategie)
+    public List<MixedNashEquilibrium> findMixedNashEquilibria() { //TODO: Hier auch eine Liste herausgeben - Alle NashGleichgewichte, bei Klick soll sich matrixdarstellung verändern (optimale strategie)
         List<MixedNashEquilibrium> equilibria = new ArrayList<>();
+        MixedNashEquilibrium mne = findDirectMixedNashEquilibrium();
+        if (mne != null) {
+            equilibria.add(mne);
+        }
+        List<NormalGame> subGames = getSubGames();
+        if (subGames.size() > 1) {
+            for (NormalGame subGame : subGames) {
+                if (isSubGameEquilibriumValid(subGame)) {
+                    equilibria.add(new MixedNashEquilibrium(copyFinalProbabilities()));
+                }
+            }
+        }
+        if (equilibria.isEmpty()) {
+            return null;
+        }
+        return equilibria;
+    }
+
+    public MixedNashEquilibrium findDirectMixedNashEquilibrium() {
         if (finalProbabilities != null) {
             finalProbabilities.clear();
         }
@@ -35,50 +54,53 @@ public class MixedNashEquilibriumFinder implements Serializable {
         calculateProbabilities(game.getPlayer2());
         if (areProbabilitesValid(game.getPlayer1()) && areProbabilitesValid(game.getPlayer2())) {
             MixedNashEquilibrium mne = new MixedNashEquilibrium(copyFinalProbabilities());
-            equilibria.add(mne);
+            return mne;
         }
-        if (getSubGames2x2().size() > 1) {
-            for (NormalGame subGame : getSubGames2x2()) {
-                System.out.println(subGame);
-                if (isSubGameEquilibriumValid(subGame)) {
-                    System.out.println("VALID");
-                    MixedNashEquilibrium mne = new MixedNashEquilibrium(copyFinalProbabilities());
-                    equilibria.add(mne);
-                }
-            }
-        }
-        if (equilibria.isEmpty()) {
-            return null;
-        }
-        return equilibria; //testen etc.
+        return null;
     }
 
     private void calculateProbabilities(Player player) {
-        HashMap<Strategy, Float> localProbabilities = calculateEvenProbabilities(player);
+        localProbabilities = calculateEvenProbabilities(player);
         if (finalProbabilities == null) {
             finalProbabilities = new TreeMap<>(new StrategyComparator(game));
         }
+        float lastDifference = 0;
+        final float toIncrease = .001f;
+        float threshold = .01f;
         for (int i = 0; i < 100000; i++) {  //100k because 100 = .001 * 100k
+            List<Float> payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
+            float difference = getMaxDifference(payoffs);
+            if (Math.abs(difference - lastDifference) < 0.00001f) {
+                if(Math.abs(threshold - .1f) < 0.00001f ) {
+                    return;
+                }
+                threshold = .1f;
+            }
+            lastDifference = difference;
             for (Strategy strat : localProbabilities.keySet()) {
-                List<Float> payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
-                float difference = getMaxDifference(payoffs);
-                if (difference == 0.0f || difference > -.01f && difference < .01f) {
+                payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
+                difference = getMaxDifference(payoffs);
+                if (difference == 0.0f || difference > -threshold && difference < threshold) {
                     for (Strategy probStrat : localProbabilities.keySet()) {
                         finalProbabilities.put(probStrat, MathHelper.round(localProbabilities.get(probStrat), 1));
                     }
                     return;
                 } else {
-                    localProbabilities = increaseProbability(localProbabilities, strat, .001f);
+                    localProbabilities = increaseProbability(localProbabilities, strat, toIncrease);
                     payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
                     if (getMaxDifference(payoffs) > difference) {
-                        localProbabilities = increaseProbability(localProbabilities, strat, -.002f);
+                        localProbabilities = increaseProbability(localProbabilities, strat, -toIncrease * 2);
+                        payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
+                        if (getMaxDifference(payoffs) > difference) {
+                            localProbabilities = increaseProbability(localProbabilities, strat, toIncrease);
+                        }
                     }
                 }
             }
         }
     }
 
-    private HashMap<Strategy, Float> increaseProbability(HashMap<Strategy, Float> localProbabilities, Strategy strat, float percentage) {
+    private Map<Strategy, Float> increaseProbability(Map<Strategy, Float> localProbabilities, Strategy strat, float percentage) {
         localProbabilities.put(strat, localProbabilities.get(strat) + percentage);
         for (Strategy s : localProbabilities.keySet()) {
             if (strat.equals(s)) {
@@ -116,7 +138,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         }
         return Collections.max(differences);
     }
-    
+
     private Map<Strategy, Float> copyFinalProbabilities() {
         Map<Strategy, Float> newMap = new TreeMap<>(new StrategyComparator(game));
         for (Strategy strat : finalProbabilities.keySet()) {
@@ -127,91 +149,49 @@ public class MixedNashEquilibriumFinder implements Serializable {
 
     public List<NormalGame> getSubGames() {
         List<NormalGame> games = new ArrayList<>();
-        final List<Strategy> firstStrategies = game.getPlayer1().getStrategies();
-        final List<Strategy> secondStrategies = game.getPlayer2().getStrategies();
-        int player1StrategiesIndex = 0;
-        int player2StrategiesIndex = 0;
-//        while (true) {
-//            StrategyPair firstPlayerPair = new StrategyPair(firstStrategies.get(player1StrategiesIndex), firstStrategies.get(player1StrategiesIndex + 1));
-//            StrategyPair secondPlayerPair = new StrategyPair(secondStrategies.get(player2StrategiesIndex), secondStrategies.get(player2StrategiesIndex + 1));
-//            Player newFirstPlayer = createPlayer(firstPlayerPair);
-//            Player newSecondPlayer = createPlayer(secondPlayerPair);
-//
-//            NormalGame newGame = new NormalGame(newFirstPlayer, newSecondPlayer);
-//            add2x2Vectors(newGame, firstPlayerPair, secondPlayerPair);
-//            games.add(newGame);
-//
-//            if (strategyIndexOutOfBounds(player1StrategiesIndex, firstStrategies.size())) {
-//                if (strategyIndexOutOfBounds(player2StrategiesIndex, secondStrategies.size())) {
-//                    break;
-//                }
-//                player1StrategiesIndex = 0;
-//                player2StrategiesIndex++;
-//            } else {
-//                player1StrategiesIndex++;
-//            }
-//        }
-        List<Strategy> player1StrategiesToRemove = new ArrayList<>();
-        List<Strategy> player2StrategiesToRemove = new ArrayList<>();
-        
-        for(Strategy strat1 : game.getPlayer1().getStrategies()) {
-            for(Strategy strat2 : game.getPlayer2().getStrategies()) {
-                player2StrategiesToRemove.add(strat2);
-                Player newPlayer1 = copyPlayerWithoutStrategies(game.getPlayer1(),player1StrategiesToRemove);
-                Player newPlayer2 = copyPlayerWithoutStrategies(game.getPlayer2(), player2StrategiesToRemove);
-                NormalGame subGame = new NormalGame(newPlayer1, newPlayer2);
-                addVectorsToSubGame(subGame);
-                player2StrategiesToRemove.clear();
+        for (List<Strategy> list : ListHelper.powerSet(game.getPlayer1().getStrategies())) {
+            if (list.isEmpty() || list.size() < 2) {
+                continue;
+            }
+            for (List<Strategy> list2 : ListHelper.powerSet(game.getPlayer2().getStrategies())) {
+                if (list2.isEmpty() || list2.size() < 2) {
+                    continue;
+                }
+                if (list.size() == game.getPlayer1().getStrategies().size() && list2.size() == game.getPlayer2().getStrategies().size()) {
+                    continue;
+                }
+                Player newPlayer1 = copyPlayerWithStrategies(game.getPlayer1(), list);
+                Player newPlayer2 = copyPlayerWithStrategies(game.getPlayer2(), list2);
+
+                NormalGame newGame = new NormalGame(newPlayer1, newPlayer2);
+                addSubGameVectors(newGame, newPlayer1, newPlayer2);
+                games.add(newGame);
             }
         }
         return games;
     }
-    
-    private void addVectorsToSubGame(NormalGame subGame) {
-        for(Strategy s1 : subGame.getPlayer1().getStrategies()) {
-            for(Strategy s2 : subGame.getPlayer2().getStrategies()) {
-                StrategyPair pair = new StrategyPair(s1, s2);
-                Strategy gameStrategy1 = game.getStrategy(s1.getName(), game.getPlayer1());
-                Strategy gameStrategy2 = game.getStrategy(s2.getName(), game.getPlayer2());
-                Vector payoff = new Vector(game.getPayoff(game.getPlayer1(), gameStrategy1, gameStrategy2), 
-                        game.getPayoff(game.getPlayer2(), gameStrategy1, gameStrategy2));
-                subGame.setVector(pair, payoff);
-            }
-        }
-    }
-    
-    private Player copyPlayerWithoutStrategies(Player player, List<Strategy> strategiesToRemove) {
-        List<Strategy> newStrategies = player.getStrategies().stream().
-                filter(s -> !strategiesToRemove.contains(s)).collect(Collectors.toList());
-        return new Player(newStrategies);
+
+    private Player copyPlayerWithStrategies(Player player, List<Strategy> strategies) {
+        Player newPlayer = new Player(strategies);
+        newPlayer.setName(player.getName());
+        return newPlayer;
     }
 
-    private Player createPlayer(StrategyPair pair) {
-        Player player = new Player(pair.getStrategy1().getName(), pair.getStrategy2().getName());
-        player.setName(game.getPlayer1().getName());;
-        return player;
-    }
-
-    private void add2x2Vectors(NormalGame newGame, StrategyPair firstPlayerPair, StrategyPair secondPlayerPair) {
-        newGame.addField(game.getVector(firstPlayerPair.getStrategy1(), secondPlayerPair.getStrategy1()));
-        newGame.addField(game.getVector(firstPlayerPair.getStrategy1(), secondPlayerPair.getStrategy2()));
-        newGame.addField(game.getVector(firstPlayerPair.getStrategy2(), secondPlayerPair.getStrategy1()));
-        newGame.addField(game.getVector(firstPlayerPair.getStrategy2(), secondPlayerPair.getStrategy2()));
-    }
-
-    private boolean strategyIndexOutOfBounds(int index, int size) {
-        return index + 1 == size - 1;
+    private void addSubGameVectors(NormalGame newGame, Player player1, Player player2) {
+        player1.getStrategies().forEach(s1 -> {
+            player2.getStrategies().forEach(s2 -> {
+                newGame.setVector(new StrategyPair(s1, s2), game.getVector(s1, s2));
+            });
+        });
     }
 
     public boolean isSubGameEquilibriumValid(NormalGame subGame) {
-        List<MixedNashEquilibrium> equilibria = subGame.findMixedNashEquilibria();
-        if (equilibria == null) {
+        MixedNashEquilibrium mne = subGame.findDirectMixedNashEquilibrium();
+        if (mne == null) {
             return false;
         }
-        MixedNashEquilibrium mne = equilibria.get(0);
         setProbabilitiesToZero();
         copyProbabilities(subGame, mne);
-
         if (betterPayoffThanSubGamePayoffExists(subGame, game.getPlayer1()) || betterPayoffThanSubGamePayoffExists(subGame, game.getPlayer2())) {
             return false;
         }
@@ -275,7 +255,8 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return new Vector(aPayoff, bPayoff);
     }
 
-    public Vector getOptimalMixedPayoff() {
+    public Vector getOptimalMixedPayoff(MixedNashEquilibrium mne) {
+        finalProbabilities = mne.getProbabilities();
         return new Vector(getOptimalMixedPayoff(game.getPlayer1()), getOptimalMixedPayoff(game.getPlayer2()));
     }
 

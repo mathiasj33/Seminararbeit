@@ -149,13 +149,17 @@ public class NormalGame implements Serializable {
     public List<PureNashEquilibrium> findPureNashEquilibria() {
         return pureNashFinder.findPureNashEquilibria();
     }
+    
+    public MixedNashEquilibrium findDirectMixedNashEquilibrium() {
+        return mixedNashFinder.findDirectMixedNashEquilibrium();
+    }
 
     public List<MixedNashEquilibrium> findMixedNashEquilibria() {
         return mixedNashFinder.findMixedNashEquilibria();
     }
     
-    public List<NormalGame> getSubGames2x2() {
-        return mixedNashFinder.getSubGames2x2();
+    public List<NormalGame> getSubGames() {
+        return mixedNashFinder.getSubGames();
     }
     
     public boolean isSubGameEquilibriumValid(NormalGame subGame) {
@@ -166,8 +170,8 @@ public class NormalGame implements Serializable {
         return mixedNashFinder.getMixedPayoff(strat, player);
     }
 
-    public Vector getOptimalMixedPayoff() {
-        return mixedNashFinder.getOptimalMixedPayoff();
+    public Vector getOptimalMixedPayoff(MixedNashEquilibrium mne) {
+        return mixedNashFinder.getOptimalMixedPayoff(mne);
     }
 
     public void print() {

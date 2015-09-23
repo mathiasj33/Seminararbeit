@@ -19,40 +19,38 @@ public class MixedNashEquilibriumFinderTest {
     private Player player1;
     private Player player2;
 
-    //@Test
+    @Test
     public void testFindMixedNashEquilibrium() {
         setupGame();
         MixedNashEquilibrium mne = game.findMixedNashEquilibria().get(0);
-        Assert.assertEquals(9.1f, (float) mne.getProbability("l", player2), .01f);
-        Assert.assertEquals(77.2f, (float) mne.getProbability("m", player2), .01f);
-        Assert.assertEquals(13.6f, (float) mne.getProbability("r", player2), .01f);
+        Assert.assertEquals(9.1f, (float) mne.getProbability("l", player2), .1f);
+        Assert.assertEquals(77.2f, (float) mne.getProbability("m", player2), .1f);
+        Assert.assertEquals(13.6f, (float) mne.getProbability("r", player2), .1f);
         Assert.assertEquals(67.6f, (float) mne.getProbability("o", player1), .1f);
-        Assert.assertEquals(4.6f, (float) mne.getProbability("m", player1), .01f);
-        Assert.assertEquals(27.7f, (float) mne.getProbability("u", player1), .01f);
+        Assert.assertEquals(4.6f, (float) mne.getProbability("m", player1), .1f);
+        Assert.assertEquals(27.7f, (float) mne.getProbability("u", player1), .1f);
         
         setupGame2();
         mne = game.findMixedNashEquilibria().get(0);
-        Assert.assertEquals(80f, (float) mne.getProbability("oben", player1), .01f);
-        Assert.assertEquals(20f, (float) mne.getProbability("unten", player1), .01f);
-        Assert.assertEquals(75f, (float) mne.getProbability("links", player2), .01f);
-        Assert.assertEquals(25f, (float) mne.getProbability("rechts", player2), .01f);
+        Assert.assertEquals(80f, (float) mne.getProbability("oben", player1), .1f);
+        Assert.assertEquals(20f, (float) mne.getProbability("unten", player1), .1f);
+        Assert.assertEquals(75f, (float) mne.getProbability("links", player2), .1f);
+        Assert.assertEquals(25f, (float) mne.getProbability("rechts", player2), .1f);
 
         Assert.assertEquals(new Vector(2.4f, 1.6f), game.getMixedPayoff("rechts", player2));
         Assert.assertEquals(new Vector(1.2f, 1.6f), game.getMixedPayoff("links", player2));
         Assert.assertEquals(new Vector(1.5f, 1.75f), game.getMixedPayoff("oben", player1));
         Assert.assertEquals(new Vector(1.5f, 1f), game.getMixedPayoff("unten", player1));
-        Assert.assertEquals(new Vector(1.5f, 1.6f), game.getOptimalMixedPayoff());
+        Assert.assertEquals(new Vector(1.5f, 1.6f), game.getOptimalMixedPayoff(mne));
     }
     
-    //@Test
+    @Test
     public void testGetSubGames2x2() {
         setupSubGame();
-
-        List<NormalGame> games = game.getSubGames2x2();
-        NormalGame game1 = games.get(0);
-        NormalGame game2 = games.get(1);
-        
-        Assert.assertEquals(2, games.size());
+        List<NormalGame> games = game.getSubGames();
+        NormalGame game1 = games.get(2);
+        NormalGame game2 = games.get(0);
+        Assert.assertEquals(3, games.size());
         Assert.assertNotNull(game1.getStrategy("oben", game1.getPlayer1()));
         Assert.assertNotNull(game1.getStrategy("mittig", game1.getPlayer1()));
         Assert.assertNotNull(game1.getStrategy("links", game1.getPlayer2()));
@@ -66,25 +64,25 @@ public class MixedNashEquilibriumFinderTest {
         Assert.assertNull(game2.getStrategy("oben", game2.getPlayer1()));
     }
     
-    //@Test
-    public void testIsSubGameEquilibriumValid() {
+    @Test
+    public void testAreSubGameEquilibriaValid() {
         setupSubGame();
-        game.findMixedNashEquilibria();
-        List<NormalGame> games = game.getSubGames2x2();
-        NormalGame game1 = games.get(0);
-        NormalGame game2 = games.get(1);
+        MixedNashEquilibrium mne = game.findMixedNashEquilibria().get(0);
+        List<NormalGame> games = game.getSubGames();
+        NormalGame game1 = games.get(2);
+        NormalGame game2 = games.get(0);
         
         Assert.assertFalse(game.isSubGameEquilibriumValid(game1));
-        Assert.assertTrue(game.isSubGameEquilibriumValid(game2));
+        Assert.assertTrue(game.isSubGameEquilibriumValid(game2));  //Hier weiter machen -> stimmt die Berechnung (in Seminararbeit per Hand anderes Ergebnis!?)
         
         setupSubGame3();
         game.findMixedNashEquilibria();
-        for(NormalGame g : game.getSubGames2x2()) {
+        for(NormalGame g : game.getSubGames()) {
             Assert.assertFalse(game.isSubGameEquilibriumValid(g));
         }
     }
     
-    //@Test
+    @Test
     public void testWithSubGames() {
         setupSubGame();
         MixedNashEquilibrium mne = game.findMixedNashEquilibria().get(0);
@@ -92,7 +90,7 @@ public class MixedNashEquilibriumFinderTest {
         Assert.assertEquals(25f, mne.getProbability("mittig", player1), .1f);
         Assert.assertTrue(player1.getStrategies().contains(game.getStrategy("oben", player1)));
         Assert.assertEquals(new Vector(2, 2), game.getVector(game.getStrategy("oben", player1), game.getStrategy("links", player2)));
-        Assert.assertEquals(3.3f, game.getOptimalMixedPayoff().getFirst(), .1f);
+        Assert.assertEquals(3.3f, game.getOptimalMixedPayoff(mne).getFirst(), .1f);
         
         setupSubGame2();
         mne = game.findMixedNashEquilibria().get(0); 
@@ -101,14 +99,14 @@ public class MixedNashEquilibriumFinderTest {
         Assert.assertEquals(0f, mne.getProbability("links", player2), 0.1f);
         Assert.assertEquals(53.8f, mne.getProbability("mittig", player2), 0.1f);
         Assert.assertEquals(46.2f, mne.getProbability("rechts", player2), 0.1f);
-        Assert.assertEquals(7.4f, game.getOptimalMixedPayoff().getFirst(), 0.1f);
-        Assert.assertEquals(1.33f, game.getOptimalMixedPayoff().getSecond(), 0.1f);
+        Assert.assertEquals(7.4f, game.getOptimalMixedPayoff(mne).getFirst(), 0.1f);
+        Assert.assertEquals(1.33f, game.getOptimalMixedPayoff(mne).getSecond(), 0.1f);
     }
     
     @Test
     public void testWithMultipleEquilibria() {
-        setupSubGame4();   //Hier irgendwas finden und dann anderen kommentar durch machen
-        System.out.println(game.findPureNashEquilibria());
+        setupSubGame4();
+        
         System.out.println(game.findMixedNashEquilibria());
     }
     
