@@ -106,7 +106,7 @@ public class MixedNashEquilibriumFinderTest {
     @Test
     public void testWithMultipleEquilibria() {
         setupSubGame4();
-        
+        hier asserts schreiben
         System.out.println(game.findMixedNashEquilibria());
     }
     
@@ -171,7 +171,7 @@ public class MixedNashEquilibriumFinderTest {
     }
     
     private void setupSubGame3() {
-        player1 = new Player("oben", "mittig", "unten");  //bug, dass isvalid nicht immer stimmt; ein spiel mit mehreren testen; TODOs; GUI; schreiben
+        player1 = new Player("oben", "mittig", "unten");
         player1.setName("Player1");
         player2 = new Player("links", "mittig", "rechts");
         player2.setName("Player2");
@@ -189,7 +189,7 @@ public class MixedNashEquilibriumFinderTest {
     }
     
     private void setupSubGame4() {
-        player1 = new Player("oben", "mittig", "mittig2", "unten");  //bug, dass isvalid nicht immer stimmt; ein spiel mit mehreren testen; TODOs; GUI; schreiben
+        player1 = new Player("oben", "mittig", "mittig2", "unten");
         player1.setName("Player1");
         player2 = new Player("links", "mittig", "rechts");
         player2.setName("Player2");

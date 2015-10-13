@@ -26,7 +26,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         }
     }
 
-    public List<MixedNashEquilibrium> findMixedNashEquilibria() { //TODO: Hier auch eine Liste herausgeben - Alle NashGleichgewichte, bei Klick soll sich matrixdarstellung verändern (optimale strategie)
+    public List<MixedNashEquilibrium> findMixedNashEquilibria() { //TODO: Hier auch eine Liste herausgeben - Alle NashGleichgewichte, bei Klick soll sich matrixdarstellung verändern (optimale strategie) -> GUI updaten
         List<MixedNashEquilibrium> equilibria = new ArrayList<>();
         MixedNashEquilibrium mne = findDirectMixedNashEquilibrium();
         if (mne != null) {
