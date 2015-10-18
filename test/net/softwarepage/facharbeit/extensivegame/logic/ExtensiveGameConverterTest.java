@@ -5,6 +5,7 @@
  */
 package net.softwarepage.facharbeit.extensivegame.logic;
 
+import net.softwarepage.facharbeit.normalgame.logic.NormalGame;
 import org.junit.Test;
 
 /**
@@ -13,15 +14,12 @@ import org.junit.Test;
  */
 public class ExtensiveGameConverterTest {
     
-    private final Tree tree;
-    
-    public ExtensiveGameConverterTest() {
-        tree = TreeHelper.getTestTree();
-    }
+    private Tree tree; //TODO Hier noch einfacheres spiel benutzen und strategien überprüfen + schauen ob NGG bei AA und AB
 
     @Test
     public void testConvertToNormalGame() {
-        new ExtensiveGameConverter().convertToNormalGame(tree);
+        tree = TreeHelper.getSmallTestTree();
+        NormalGame game = new ExtensiveGameConverter().convertToNormalGame(tree);
     }
     
 }

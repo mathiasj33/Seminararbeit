@@ -81,19 +81,20 @@ public class Matrix implements Serializable {
     
     @Override
     public String toString() {
-//        String s = "";
-//        for (Strategy fStrat : player1.getStrategies()) {
-//            for (Strategy sStrat : player2.getStrategies()) {
-//                s += player1.getName() + ": " + fStrat + "; " + player2.getName() + ": " + sStrat + " -> ";
-//                s += getVector(fStrat, sStrat) + " ";
-//            }
-//        }
-        StringBuilder builder = new StringBuilder();
-        builder.append("Player 1: ");
-        player1.getStrategies().forEach(s -> builder.append(s.getName()).append(", "));
-        builder.append("; Player 2: ");
-        player2.getStrategies().forEach(s -> builder.append(s.getName()).append(", "));
-        builder.append("\n");
-        return builder.toString();
+        String s = "";
+        for (Strategy fStrat : player1.getStrategies()) {
+            for (Strategy sStrat : player2.getStrategies()) {
+                s += player1.getName() + ": " + fStrat + "; " + player2.getName() + ": " + sStrat + " -> ";
+                s += getVector(fStrat, sStrat) + " ";
+            }
+        }
+        return s;
+//        StringBuilder builder = new StringBuilder();
+//        builder.append("Player 1: ");
+//        player1.getStrategies().forEach(s -> builder.append(s.getName()).append(", "));
+//        builder.append("; Player 2: ");
+//        player2.getStrategies().forEach(s -> builder.append(s.getName()).append(", "));
+//        builder.append("\n");
+//        return builder.toString();
     }
 }

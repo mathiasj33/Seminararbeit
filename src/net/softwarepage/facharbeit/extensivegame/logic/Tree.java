@@ -3,6 +3,7 @@ package net.softwarepage.facharbeit.extensivegame.logic;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import net.softwarepage.facharbeit.normalgame.logic.Vector;
 
 public class Tree {
 
@@ -29,24 +30,25 @@ public class Tree {
         });
         return deepChildren.get(0);
     }
-    
+
     public List<Branch> getBranches() {
         return getBranches(rootNode);
     }
-    
+
     public List<Branch> getBranches(StrategyNode root) {
         List<Branch> branches = new ArrayList<>();
-        for(Node node : getEndingNodes(root)) {
+        for (Node node : getEndingNodes(root)) {
             List<Node> branch = new ArrayList<>();
             branch.add(node);
-            while(node.getParent() != null) {
+            while (node.getParent() != null) {
                 node = node.getParent();
-                branch.add(node); 
+                branch.add(node);
             }
             Collections.reverse(branch);
             List<NodeConnection> connections = new ArrayList<>();
-            for(Node n : branch) {
-                if(n instanceof VectorNode) continue;
+            for (Node n : branch) {
+                if (n instanceof VectorNode)
+                    continue;
                 StrategyNode sn = (StrategyNode) n;
                 connections.add(sn.getConnectionTo(branch.get(branch.indexOf(sn) + 1)));
             }
@@ -54,27 +56,52 @@ public class Tree {
         }
         return branches;
     }
-    
+
     public List<NodeConnection> getFirstPlayerFirstStrategies() {
         return rootNode.getAllConnections();
     }
-    
+
     public int getLayer(Node child) {
         return countNumberOfAncestors(child);
     }
-    
+
     private List<VectorNode> getEndingNodes(StrategyNode node) {
         List<VectorNode> nodes = new ArrayList<>();
         node.getDeepChildren().forEach(c -> {
-            if(c instanceof VectorNode) {
+            if (c instanceof VectorNode) {
                 nodes.add((VectorNode) c);
             }
         });
         return nodes;
     }
-    
+
     public boolean isPlayer1Layer(int layer) {
         return layer % 2 == 0;
+    }
+
+    public Vector getVector(ExtensiveStrategy strat1, ExtensiveStrategy strat2) {
+        if (strat1.getDecisions().get(0).getChild() instanceof VectorNode)
+            return ((VectorNode) strat1.getDecisions().get(0).getChild()).getPayoff();
+        StrategyNode currentNode = (StrategyNode) strat1.getDecisions().get(0).getChild();
+        int player = 2;
+        Vector vector = null;
+        while (vector == null) {
+            ExtensiveStrategy lookupStrat = player == 2 ? strat2 : strat1;
+            for (NodeConnection conn : lookupStrat.getDecisions()) {
+                if (currentNode.getAllConnections().contains(conn)) {
+                    Node child = conn.getChild();
+                    if (child instanceof VectorNode)
+                        return ((VectorNode) child).getPayoff();
+                    else
+                        currentNode = (StrategyNode) child;
+                }
+            }
+            if (player == 1)
+                player = 2;
+            else
+                player = 1;
+        }
+        return null;
     }
 
     private int countNumberOfAncestors(Node child) {
@@ -90,20 +117,4 @@ public class Tree {
     public StrategyNode getRootNode() {
         return rootNode;
     }
-
-//    public List<String> getStrategyNamesOnLayer(int layer) {
-//        if (layer < 0 || layer > getNumberOfLayers()) {
-//            return null;
-//        }
-//        List<String> strategyNames = new ArrayList<>();
-//        if (layer == 0) {
-//            strategyNames.addAll(rootNode.getStrategyNames());
-//        }
-//        for (Node child : rootNode.getDeepChildren()) {
-//            if (countNumberOfAncestors(child) == layer && child instanceof StrategyNode) {
-//                strategyNames.addAll(((StrategyNode) child).getStrategyNames());
-//            }
-//        }
-//        return strategyNames;
-//    }
 }

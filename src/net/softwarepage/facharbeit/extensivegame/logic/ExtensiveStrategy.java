@@ -23,6 +23,10 @@ public class ExtensiveStrategy {
         this.decisions.addAll(decisions);
     }
 
+    public List<NodeConnection> getDecisions() {
+        return decisions;
+    }
+
     @Override
     public int hashCode() {
         int hash = 7;

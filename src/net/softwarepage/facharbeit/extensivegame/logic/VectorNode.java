@@ -6,9 +6,8 @@ import net.softwarepage.facharbeit.normalgame.logic.Vector;
 public class VectorNode extends Node {
     private Vector payoff;
 
-    public VectorNode(String name, Vector payoff) {
+    public VectorNode(Vector payoff) {
         super();
-        this.name = name;
         this.payoff = payoff;
     }
 
