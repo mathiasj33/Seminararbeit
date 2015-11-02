@@ -18,7 +18,6 @@ public class ExtensiveGameConverter {
 
         List<ExtensiveStrategy> player1Strategies = getPlayer1Strategies();
         List<ExtensiveStrategy> player2Strategies = getPlayer2Strategies();
-        //TODO: DAnn Spieler1 (auch D eleminieren), VectorNodes und NormalGame. Testen (mit noch mehr ExtensiveGames etc. etc.); bessere Tests schreiben (für alles!), Auch normales Nash-Gleichgewicht dann Testen und einfache Spiele
 
         List<Strategy> player1NormalStrategies = convertExtensiveStrategiesToNormalForm(player1Strategies);
         List<Strategy> player2NormalStrategies = convertExtensiveStrategiesToNormalForm(player2Strategies);
@@ -33,12 +32,8 @@ public class ExtensiveGameConverter {
             for (ExtensiveStrategy player2Strat : player2Strategies) {
                 game.setVector(new StrategyPair(player1NormalStrategies.get(player1Strategies.indexOf(player1Strat)),
                         player2NormalStrategies.get(player2Strategies.indexOf(player2Strat))), tree.getVector(player1Strat, player2Strat));
-
             }
         }
-        System.out.println(player1NormalStrategies);
-        System.out.println(player2NormalStrategies);
-        System.out.println(game.findPureNashEquilibria());
         return game;
     }
 
@@ -54,7 +49,7 @@ public class ExtensiveGameConverter {
             if (!isBranchValid(branch, 1))
                 continue;
             ExtensiveStrategy strat = new ExtensiveStrategy();
-            for (NodeConnection conn : branch.getConnections()) { //TODO andere Kommentare; not valid auch weg machen; sonst noch überprüfen, dass wie bei Sp2. ist NGG bei ADF!?
+            for (NodeConnection conn : branch.getConnections()) {
                 if (tree.isPlayer1Layer(tree.getLayer(conn.getParent()))) {
                     strat.addDecision(conn);
                 }

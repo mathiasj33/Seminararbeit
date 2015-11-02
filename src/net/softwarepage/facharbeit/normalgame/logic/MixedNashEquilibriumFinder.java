@@ -15,6 +15,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
     private final NormalGame game;
     private Map<Strategy, Float> localProbabilities;
     private Map<Strategy, Float> finalProbabilities;
+    private Map<Strategy, Float> toIncreaseMap;
 
     public MixedNashEquilibriumFinder(NormalGame game) {
         this.game = game;
@@ -26,7 +27,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         }
     }
 
-    public List<MixedNashEquilibrium> findMixedNashEquilibria() { //TODO: Hier auch eine Liste herausgeben - Alle NashGleichgewichte, bei Klick soll sich matrixdarstellung verändern (optimale strategie) -> GUI updaten
+    public List<MixedNashEquilibrium> findMixedNashEquilibria() {
         List<MixedNashEquilibrium> equilibria = new ArrayList<>();
         MixedNashEquilibrium mne = findDirectMixedNashEquilibrium();
         if (mne != null) {
@@ -60,47 +61,55 @@ public class MixedNashEquilibriumFinder implements Serializable {
     }
 
     private void calculateProbabilities(Player player) {
-        localProbabilities = calculateEvenProbabilities(player);
+        calculateEvenProbabilities(player);
         if (finalProbabilities == null) {
             finalProbabilities = new TreeMap<>(new StrategyComparator(game));
         }
+        toIncreaseMap = new HashMap<>();
+        for (Strategy strat : player.getStrategies()) {
+            toIncreaseMap.put(strat, 1f);
+        }
         float lastDifference = 0;
-        final float toIncrease = .001f;
         float threshold = .01f;
         for (int i = 0; i < 100000; i++) {  //100k because 100 = .001 * 100k
-            List<Float> payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
-            float difference = getMaxDifference(payoffs);
-            if (Math.abs(difference - lastDifference) < 0.00001f) {
-                if(Math.abs(threshold - .1f) < 0.00001f ) {
+            float difference = getMaxDifferenceOfOtherPlayer(player);
+            if (Math.abs(difference - lastDifference) < 0.00001f) {  //difference == lastdifference
+                if (Math.abs(threshold - .1f) < 0.00001f)  //threshold == .1f
                     return;
-                }
                 threshold = .1f;
             }
             lastDifference = difference;
             for (Strategy strat : localProbabilities.keySet()) {
-                payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
-                difference = getMaxDifference(payoffs);
-                if (difference == 0.0f || difference > -threshold && difference < threshold) {
+                difference = getMaxDifferenceOfOtherPlayer(player);
+                if (difference > -threshold && difference < threshold) {
                     for (Strategy probStrat : localProbabilities.keySet()) {
                         finalProbabilities.put(probStrat, MathHelper.round(localProbabilities.get(probStrat), 1));
                     }
                     return;
                 } else {
-                    localProbabilities = increaseProbability(localProbabilities, strat, toIncrease);
-                    payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
-                    if (getMaxDifference(payoffs) > difference) {
-                        localProbabilities = increaseProbability(localProbabilities, strat, -toIncrease * 2);
-                        payoffs = getMixedPayoffsOfOtherPlayer(localProbabilities, player);
-                        if (getMaxDifference(payoffs) > difference) {
-                            localProbabilities = increaseProbability(localProbabilities, strat, toIncrease);
-                        }
-                    }
+                    improveProbability(player, strat);
                 }
             }
         }
     }
 
-    private Map<Strategy, Float> increaseProbability(Map<Strategy, Float> localProbabilities, Strategy strat, float percentage) {
+    private void improveProbability(Player player, Strategy strat) {
+        float difference = getMaxDifferenceOfOtherPlayer(player);
+        float toIncrease = toIncreaseMap.get(strat);
+        increaseProbability(strat, toIncrease);
+        if (getMaxDifferenceOfOtherPlayer(player) > difference) {
+            increaseProbability(strat, -toIncrease * 2);
+            if (getMaxDifferenceOfOtherPlayer(player) > difference) {
+                increaseProbability(strat, toIncrease);
+                if (Math.abs(toIncrease - 1) < 0.001f) {
+                    toIncreaseMap.put(strat, .001f);
+                    improveProbability(player, strat);
+                }
+            }
+        }
+    }
+
+    private void increaseProbability(Strategy strat, float percentage) {
         localProbabilities.put(strat, localProbabilities.get(strat) + percentage);
         for (Strategy s : localProbabilities.keySet()) {
             if (strat.equals(s)) {
@@ -108,7 +117,6 @@ public class MixedNashEquilibriumFinder implements Serializable {
             }
             localProbabilities.put(s, localProbabilities.get(s) - percentage / (float) (localProbabilities.keySet().size() - 1));
         }
-        return localProbabilities;
     }
 
     private boolean areProbabilitesValid(Player player) {
@@ -120,13 +128,12 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return true;
     }
 
-    private HashMap<Strategy, Float> calculateEvenProbabilities(Player player) {
+    private void calculateEvenProbabilities(Player player) {
         List<Strategy> ownStrats = player.getStrategies();
-        HashMap<Strategy, Float> localProbabilities = new HashMap<>();
+        localProbabilities = new HashMap<>();
         for (Strategy ownStrat : ownStrats) {
             localProbabilities.put(ownStrat, (float) (1 / (float) ownStrats.size()) * 100);
         };
-        return localProbabilities;
     }
 
     private float getMaxDifference(List<Float> floats) {
@@ -219,7 +226,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         Strategy firstStrategy = subGamePlayer.getStrategies().get(0);
         float payoff;
         if (player.equals(game.getPlayer1())) {
-            payoff = getMixedPayoff(firstStrategy.getName(), player).getFirst();
+            payoff = getMixedPayoff(firstStrategy.getName(), player).getFirst();  //In dem gem. NGG sind die Spieler zwischen ihren Strategien indifferent!! -> Auszahlung von irgendeiner NGG strategie muss immer größer sein als ASuzahlung von p=0
         } else {
             payoff = getMixedPayoff(firstStrategy.getName(), player).getSecond();
         }
@@ -241,7 +248,12 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return false;
     }
 
-    public Vector getMixedPayoff(String strat, Player player) {
+    public Vector getMixedPayoff(MixedNashEquilibrium mne, String strat, Player player) {
+        finalProbabilities = mne.getProbabilities();
+        return getMixedPayoff(strat, player);
+    }
+
+    private Vector getMixedPayoff(String strat, Player player) {
         Strategy strategy = game.getStrategy(strat, player);
         Player otherPlayer = player.equals(game.getPlayer1()) ? game.getPlayer2() : game.getPlayer1();
         float aPayoff = 0;
@@ -277,7 +289,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return MathHelper.round(payoff, 2);
     }
 
-    private List<Float> getMixedPayoffsOfOtherPlayer(Map<Strategy, Float> localProbabilities, Player player) {
+    private List<Float> getMixedPayoffsOfOtherPlayer(Player player) {
         List<Strategy> ownStrategies = player.getStrategies();
         List<Strategy> otherStrategies = game.getOpponentStrategies(player);
         List<Float> payoffs = new ArrayList<>();
@@ -293,5 +305,9 @@ public class MixedNashEquilibriumFinder implements Serializable {
             payoffs.add(payoff);
         }
         return payoffs;
+    }
+
+    private float getMaxDifferenceOfOtherPlayer(Player player) {
+        return getMaxDifference(getMixedPayoffsOfOtherPlayer(player));
     }
 }

@@ -35,7 +35,7 @@ public class DominantStrategyFinder implements Serializable {
                         weaklyDominated = true;
                     }
                 }
-                if (ListHelper.isListOfSameElements(possiblyDominated)) {
+                if (ListHelper.isListOfSameElements(possiblyDominated) && !possiblyDominated.isEmpty()) {
                     Strategy dominatedStrat = possiblyDominated.get(0);
                     if (!dominatedStrategies.contains(dominatedStrat)) {
                         StrategyType type = weaklyDominated ? StrategyType.WeaklyDominated : StrategyType.Dominated;

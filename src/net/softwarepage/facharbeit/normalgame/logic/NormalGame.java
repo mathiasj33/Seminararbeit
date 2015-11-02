@@ -166,8 +166,8 @@ public class NormalGame implements Serializable {
         return mixedNashFinder.isSubGameEquilibriumValid(subGame);
     }
 
-    public Vector getMixedPayoff(String strat, Player player) {
-        return mixedNashFinder.getMixedPayoff(strat, player);
+    public Vector getMixedPayoff(MixedNashEquilibrium mne, String strat, Player player) {
+        return mixedNashFinder.getMixedPayoff(mne, strat, player);
     }
 
     public Vector getOptimalMixedPayoff(MixedNashEquilibrium mne) {

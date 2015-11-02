@@ -22,7 +22,7 @@ public class MixedNashEquilibriumFinderTest {
     @Test
     public void testFindMixedNashEquilibrium() {
         setupGame();
-        MixedNashEquilibrium mne = game.findMixedNashEquilibria().get(0);
+        MixedNashEquilibrium mne = game.findDirectMixedNashEquilibrium();
         Assert.assertEquals(9.1f, (float) mne.getProbability("l", player2), .1f);
         Assert.assertEquals(77.2f, (float) mne.getProbability("m", player2), .1f);
         Assert.assertEquals(13.6f, (float) mne.getProbability("r", player2), .1f);
@@ -37,10 +37,10 @@ public class MixedNashEquilibriumFinderTest {
         Assert.assertEquals(75f, (float) mne.getProbability("links", player2), .1f);
         Assert.assertEquals(25f, (float) mne.getProbability("rechts", player2), .1f);
 
-        Assert.assertEquals(new Vector(2.4f, 1.6f), game.getMixedPayoff("rechts", player2));
-        Assert.assertEquals(new Vector(1.2f, 1.6f), game.getMixedPayoff("links", player2));
-        Assert.assertEquals(new Vector(1.5f, 1.75f), game.getMixedPayoff("oben", player1));
-        Assert.assertEquals(new Vector(1.5f, 1f), game.getMixedPayoff("unten", player1));
+        Assert.assertEquals(new Vector(2.4f, 1.6f), game.getMixedPayoff(mne, "rechts", player2));
+        Assert.assertEquals(new Vector(1.2f, 1.6f), game.getMixedPayoff(mne, "links", player2));
+        Assert.assertEquals(new Vector(1.5f, 1.75f), game.getMixedPayoff(mne, "oben", player1));
+        Assert.assertEquals(new Vector(1.5f, 1f), game.getMixedPayoff(mne, "unten", player1));
         Assert.assertEquals(new Vector(1.5f, 1.6f), game.getOptimalMixedPayoff(mne));
     }
     
@@ -106,8 +106,23 @@ public class MixedNashEquilibriumFinderTest {
     @Test
     public void testWithMultipleEquilibria() {
         setupSubGame4();
-        hier asserts schreiben
-        System.out.println(game.findMixedNashEquilibria());
+        List<MixedNashEquilibrium> mixedNashEquilibria = game.findMixedNashEquilibria();
+        MixedNashEquilibrium mne1 = mixedNashEquilibria.get(0);
+        MixedNashEquilibrium mne2 = mixedNashEquilibria.get(1);
+        
+        Assert.assertEquals(0f, mne1.getProbability("oben", player1), .1f);
+        Assert.assertEquals(98.1f, mne1.getProbability("unten", player1), .1f);
+        Assert.assertEquals(8.2f, mne1.getProbability("links", player2), .1f);
+        
+        Assert.assertEquals(15.3f, mne2.getProbability("oben", player1), .1f);
+        Assert.assertEquals(0f, mne2.getProbability("mittig2", player1), .1f);
+        Assert.assertEquals(3.9f, mne2.getProbability("rechts", player2), .1f);
+    }
+    
+    @Test
+    public void testNoMixed() {
+        setupNoMixedGame();
+        Assert.assertEquals(null, game.findMixedNashEquilibria());
     }
     
     private void setupGame() {
@@ -207,5 +222,17 @@ public class MixedNashEquilibriumFinderTest {
         game.addField(new Vector(-2, 2));
         game.addField(new Vector(5, 0.3f));
         game.addField(new Vector(1, -2));
+    }
+    
+    private void setupNoMixedGame() {
+        player1 = new Player("oben", "unten");
+        player2 = new Player("links", "rechts");
+        game = new NormalGame(player1, player2);
+        
+        game.addField(new Vector(2, 2));
+        game.addField(new Vector(5, 1));
+        game.addField(new Vector(3, 4));
+        game.addField(new Vector(4, 1));
+        
     }
 }

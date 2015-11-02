@@ -20,12 +20,13 @@ public class ListHelperTest {
 
     @Test
     public void testGetPowerset() {
-        List<String> list = new ArrayList<>();
-        list.add("1");
-        list.add("2");
-        list.add("3");
-        list.add("4");
-        System.out.println(ListHelper.powerSet(list));
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        list.add(4);
+        List<List<Integer>> powerset = ListHelper.powerSet(list);
+        System.out.println(powerset);
     }
     
 }

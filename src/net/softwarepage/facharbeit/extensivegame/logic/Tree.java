@@ -80,9 +80,10 @@ public class Tree {
     }
 
     public Vector getVector(ExtensiveStrategy strat1, ExtensiveStrategy strat2) {
-        if (strat1.getDecisions().get(0).getChild() instanceof VectorNode)
-            return ((VectorNode) strat1.getDecisions().get(0).getChild()).getPayoff();
-        StrategyNode currentNode = (StrategyNode) strat1.getDecisions().get(0).getChild();
+        Node firstChild = strat1.getDecisions().get(0).getChild();
+        if (firstChild instanceof VectorNode)
+            return ((VectorNode) firstChild).getPayoff();
+        StrategyNode currentNode = (StrategyNode) firstChild;
         int player = 2;
         Vector vector = null;
         while (vector == null) {

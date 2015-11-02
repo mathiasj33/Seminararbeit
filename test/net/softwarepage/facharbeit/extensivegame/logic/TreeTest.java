@@ -22,12 +22,20 @@ public class TreeTest {
     
     @Test
     public void testGetDeepestChild() {
-        Assert.assertEquals("G", tree.getDeepestChild().getName());
+        Assert.assertEquals("G", tree.getDeepestChild().getParent().getConnectionTo(tree.getDeepestChild()).getName());
     }
     
     @Test
     public void testGetBranches() {
-        System.out.println(tree.getBranches());  //TODO MACHEN
+        Branch first = tree.getBranches().get(0);
+        Assert.assertEquals("[A, D, F]", first.toString());
+        Branch fifth = tree.getBranches().get(4);
+        Assert.assertEquals("[A, D, E, J]", fifth.toString());
+        Branch seventh = tree.getBranches().get(6);
+        Assert.assertEquals("[B, L]", seventh.toString());
+        Branch twelvth = tree.getBranches().get(11);
+        Assert.assertEquals("[C, Q]", twelvth.toString());
+        Assert.assertEquals(12, tree.getBranches().size());
     }
     
     @Test
@@ -44,10 +52,5 @@ public class TreeTest {
     public void testIsPlayer1Layer() {
         Assert.assertTrue(tree.isPlayer1Layer(0));
         Assert.assertTrue(tree.isPlayer1Layer(2));
-    }
-    
-    @Test
-    public void testGetVector() {
-        
     }
 }
