@@ -10,11 +10,11 @@ import java.util.TreeMap;
 import net.softwarepage.facharbeit.normalgame.helpers.ListHelper;
 import net.softwarepage.facharbeit.normalgame.helpers.MathHelper;
 
-public class MixedNashEquilibriumFinder implements Serializable {
+public class MixedNashEquilibriumFinder implements Serializable {  //Die Klasse, um Nash-Gleichgewichte in gemischten Strategien zu finden
 
     private final NormalGame game;
     private Map<Strategy, Float> localProbabilities;
-    private Map<Strategy, Float> finalProbabilities;
+    private Map<Strategy, Float> finalProbabilities;  //die letztendlichen Wahrscheinlichkeiten in dem Nash-Gleichgewicht
     private Map<Strategy, Float> toIncreaseMap;
 
     public MixedNashEquilibriumFinder(NormalGame game) {
@@ -29,15 +29,17 @@ public class MixedNashEquilibriumFinder implements Serializable {
 
     public List<MixedNashEquilibrium> findMixedNashEquilibria() {
         List<MixedNashEquilibrium> equilibria = new ArrayList<>();
-        MixedNashEquilibrium mne = findDirectMixedNashEquilibrium();
+        MixedNashEquilibrium mne = findDirectMixedNashEquilibrium();  //Erst wird in dem Spiel selbst nach einem Nash-Gleichgewicht in gemischten Strategien gesucht
         if (mne != null) {
             equilibria.add(mne);
         }
         List<NormalGame> subGames = getSubGames();
         if (subGames.size() > 1) {
             for (NormalGame subGame : subGames) {
-                if (isSubGameEquilibriumValid(subGame)) {
-                    equilibria.add(new MixedNashEquilibrium(copyFinalProbabilities()));
+                if (isSubGameEquilibriumValid(subGame)) {  //Danach wird der Prozess für jedes Teilspiel wiederholt
+                    MixedNashEquilibrium smne = new MixedNashEquilibrium(copyFinalProbabilities());
+                    if (!equilibria.contains(smne))
+                        equilibria.add(smne);
                 }
             }
         }
@@ -47,11 +49,11 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return equilibria;
     }
 
-    public MixedNashEquilibrium findDirectMixedNashEquilibrium() {
+    public MixedNashEquilibrium findDirectMixedNashEquilibrium() {  //Finden eines Nash-Gleichgewicht in gemischten Strategien im eigentlichen Spiel
         if (finalProbabilities != null) {
             finalProbabilities.clear();
         }
-        calculateProbabilities(game.getPlayer1());
+        calculateProbabilities(game.getPlayer1());  //Die Wahrscheinlichkeiten werden für beide Spieler berechnet und daraus wird das Nash-Gleichgewicht erstellt
         calculateProbabilities(game.getPlayer2());
         if (areProbabilitesValid(game.getPlayer1()) && areProbabilitesValid(game.getPlayer2())) {
             MixedNashEquilibrium mne = new MixedNashEquilibrium(copyFinalProbabilities());
@@ -61,33 +63,33 @@ public class MixedNashEquilibriumFinder implements Serializable {
     }
 
     private void calculateProbabilities(Player player) {
-        calculateEvenProbabilities(player);
+        calculateEvenProbabilities(player);  //Die Anfangswahrscheinlichkeiten werden berechnet
         if (finalProbabilities == null) {
             finalProbabilities = new TreeMap<>(new StrategyComparator(game));
         }
-        toIncreaseMap = new HashMap<>();
+        toIncreaseMap = new HashMap<>();  //In der toIncreaseMap ist gespeichert, ob eine Strategie mit einem oder 0,1 Prozentpunkten erhöht wird
         for (Strategy strat : player.getStrategies()) {
-            toIncreaseMap.put(strat, 1f);
+            toIncreaseMap.put(strat, 1f);  //Zunächst wird jede Strategie mit je einem Prozentpunkt erhöht; weshalb das in der Map gespeichert wird
         }
         float lastDifference = 0;
         float threshold = .01f;
-        for (int i = 0; i < 100000; i++) {  //100k because 100 = .001 * 100k
-            float difference = getMaxDifferenceOfOtherPlayer(player);
+        for (int i = 0; i < 100000; i++) {
+            float difference = getMaxDifferenceOfOtherPlayer(player);  
             if (Math.abs(difference - lastDifference) < 0.00001f) {  //difference == lastdifference
                 if (Math.abs(threshold - .1f) < 0.00001f)  //threshold == .1f
                     return;
-                threshold = .1f;
+                threshold = .1f;  //Das hier ist alles nur um sicherzustellen, dass das Nash-Gleichgewicht möglichst präzise gefunden wird
             }
             lastDifference = difference;
-            for (Strategy strat : localProbabilities.keySet()) {
+            for (Strategy strat : localProbabilities.keySet()) { //Der Unterschied in den gegnerischen Auszahlungen
                 difference = getMaxDifferenceOfOtherPlayer(player);
-                if (difference > -threshold && difference < threshold) {
+                if (difference > -threshold && difference < threshold) {  //Wenn der Unterschied ungefähr gleich null ist
                     for (Strategy probStrat : localProbabilities.keySet()) {
-                        finalProbabilities.put(probStrat, MathHelper.round(localProbabilities.get(probStrat), 1));
+                        finalProbabilities.put(probStrat, MathHelper.round(localProbabilities.get(probStrat), 1));  //Die finalen Wahrscheinlichkeiten sind gefunden
                     }
                     return;
                 } else {
-                    improveProbability(player, strat);
+                    improveProbability(player, strat);  //Sonst müssen die Wahrscheinlichkeiten angepasst werden
                 }
             }
         }
@@ -96,13 +98,13 @@ public class MixedNashEquilibriumFinder implements Serializable {
     private void improveProbability(Player player, Strategy strat) {
         float difference = getMaxDifferenceOfOtherPlayer(player);
         float toIncrease = toIncreaseMap.get(strat);
-        increaseProbability(strat, toIncrease);
-        if (getMaxDifferenceOfOtherPlayer(player) > difference) {
-            increaseProbability(strat, -toIncrease * 2);
-            if (getMaxDifferenceOfOtherPlayer(player) > difference) {
-                increaseProbability(strat, toIncrease);
-                if (Math.abs(toIncrease - 1) < 0.001f) {
-                    toIncreaseMap.put(strat, .001f);
+        increaseProbability(strat, toIncrease);  //P für diese Strategie wird erhöht
+        if (getMaxDifferenceOfOtherPlayer(player) > difference) {  //Wenn der Unterschied jetzt größer ist
+            increaseProbability(strat, -toIncrease * 2); //wird P für diese Strategie erniegrigt
+            if (getMaxDifferenceOfOtherPlayer(player) > difference) {  //Wenn der Unterschied jetzt größer ist
+                increaseProbability(strat, toIncrease);  //wird P wieder auf den Anfangswert gesetzt
+                if (Math.abs(toIncrease - 1) < 0.001f) {  //Wenn toIncrease gleich einem Prozentpunkt ist
+                    toIncreaseMap.put(strat, .001f);  //toIncrease wird auf 0.1 Prozentpunkte gesetzt
                     improveProbability(player, strat);
                 }
             }
@@ -110,29 +112,31 @@ public class MixedNashEquilibriumFinder implements Serializable {
     }
 
     private void increaseProbability(Strategy strat, float percentage) {
-        localProbabilities.put(strat, localProbabilities.get(strat) + percentage);
+        localProbabilities.put(strat, localProbabilities.get(strat) + percentage);  //Die Wahrscheinlichkeit wird für diese Strategie erhöht
         for (Strategy s : localProbabilities.keySet()) {
             if (strat.equals(s)) {
                 continue;
             }
-            localProbabilities.put(s, localProbabilities.get(s) - percentage / (float) (localProbabilities.keySet().size() - 1));
+            localProbabilities.put(s, localProbabilities.get(s) - percentage / (float) (localProbabilities.keySet().size() - 1));  //und für alle anderen Strategien erniedrigt
         }
     }
 
-    private boolean areProbabilitesValid(Player player) {
+    private boolean areProbabilitesValid(Player player) {  //Eine Methode, die sicher stellt, dass die Wahrscheinlichkeiten zwischen 0 und 1 liegen und insgesamt 1 ergeben
+        float sum = 0;
         for (Strategy strategy : player.getStrategies()) {
             if (finalProbabilities.get(strategy) == null || finalProbabilities.get(strategy) < 0f || finalProbabilities.get(strategy) > 100f) {
                 return false;
             }
+            sum += finalProbabilities.get(strategy);
         }
-        return true;
+        return (Math.abs(sum - 100) < .5f);
     }
 
     private void calculateEvenProbabilities(Player player) {
         List<Strategy> ownStrats = player.getStrategies();
         localProbabilities = new HashMap<>();
         for (Strategy ownStrat : ownStrats) {
-            localProbabilities.put(ownStrat, (float) (1 / (float) ownStrats.size()) * 100);
+            localProbabilities.put(ownStrat, (float) (1 / (float) ownStrats.size()) * 100);  //Es werden gleiche Anfangswahrscheinlichkeiten für alle Strategien berechnet
         };
     }
 
@@ -143,7 +147,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
                 differences.add(Math.abs(floats.get(i) - floats.get(j)));
             }
         }
-        return Collections.max(differences);
+        return Collections.max(differences);  //Der höchste Unterschied in den gegnerischen Auszahlungen zwischen zwei gegnerischen Strategien wird zurückgegeben
     }
 
     private Map<Strategy, Float> copyFinalProbabilities() {
@@ -154,31 +158,29 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return newMap;
     }
 
-    public List<NormalGame> getSubGames() {
+    public List<NormalGame> getSubGames() {  //Liefert die Teilspiele zurück
         List<NormalGame> games = new ArrayList<>();
-        for (List<Strategy> list : ListHelper.powerSet(game.getPlayer1().getStrategies())) {
-            if (list.isEmpty() || list.size() < 2) {
+        for (List<Strategy> list : ListHelper.powerSet(game.getPlayer1().getStrategies())) {  //Für jede Liste aus der Potenzmenge
+            if (list.isEmpty() || list.size() < 2)  //Ignoriere Listen mit weniger als zwei Strategien
                 continue;
-            }
             for (List<Strategy> list2 : ListHelper.powerSet(game.getPlayer2().getStrategies())) {
-                if (list2.isEmpty() || list2.size() < 2) {
+                if (list2.isEmpty() || list2.size() < 2)
                     continue;
-                }
                 if (list.size() == game.getPlayer1().getStrategies().size() && list2.size() == game.getPlayer2().getStrategies().size()) {
                     continue;
                 }
                 Player newPlayer1 = copyPlayerWithStrategies(game.getPlayer1(), list);
                 Player newPlayer2 = copyPlayerWithStrategies(game.getPlayer2(), list2);
 
-                NormalGame newGame = new NormalGame(newPlayer1, newPlayer2);
-                addSubGameVectors(newGame, newPlayer1, newPlayer2);
+                NormalGame newGame = new NormalGame(newPlayer1, newPlayer2);  //Erstelle ein neues Spiel aus den Kombinationen
+                addSubGameVectors(newGame, newPlayer1, newPlayer2);  //Fügt doe entsprechenden Vektoren zum Teilspiel hinzu
                 games.add(newGame);
             }
         }
         return games;
     }
 
-    private Player copyPlayerWithStrategies(Player player, List<Strategy> strategies) {
+    private Player copyPlayerWithStrategies(Player player, List<Strategy> strategies) {  
         Player newPlayer = new Player(strategies);
         newPlayer.setName(player.getName());
         return newPlayer;
@@ -199,7 +201,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         }
         setProbabilitiesToZero();
         copyProbabilities(subGame, mne);
-        if (betterPayoffThanSubGamePayoffExists(subGame, game.getPlayer1()) || betterPayoffThanSubGamePayoffExists(subGame, game.getPlayer2())) {
+        if (betterPayoffThanSubGamePayoffExists(subGame, game.getPlayer1()) || betterPayoffThanSubGamePayoffExists(subGame, game.getPlayer2())) {  //Wenn eine bessere Auszahlung als im Teilspiel existiert, ist es nicht gültig
             return false;
         }
         return true;
@@ -226,13 +228,13 @@ public class MixedNashEquilibriumFinder implements Serializable {
         Strategy firstStrategy = subGamePlayer.getStrategies().get(0);
         float payoff;
         if (player.equals(game.getPlayer1())) {
-            payoff = getMixedPayoff(firstStrategy.getName(), player).getFirst();  //In dem gem. NGG sind die Spieler zwischen ihren Strategien indifferent!! -> Auszahlung von irgendeiner NGG strategie muss immer größer sein als ASuzahlung von p=0
+            payoff = getMixedPayoff(firstStrategy.getName(), player).getFirst();  //Auszahlung im Nash-Gleichgewicht
         } else {
             payoff = getMixedPayoff(firstStrategy.getName(), player).getSecond();
         }
 
         for (Strategy strat : player.getStrategies()) {
-            if (subGame.getStrategy(strat.getName(), subGamePlayer) != null) {
+            if (subGame.getStrategy(strat.getName(), subGamePlayer) != null) {  //Wenn die Strategie im Nash-Gleichgewicht ist wird sie ignoriert
                 continue;
             }
             float stratPayoff;
@@ -241,7 +243,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
             } else {
                 stratPayoff = getMixedPayoff(strat.getName(), player).getSecond();
             }
-            if (stratPayoff > payoff) {
+            if (stratPayoff > payoff) {  //Wenn eine Strategie, die nicht im Nash-Gleichgewicht ist eine höhere Auszahlung hat, ist das Nash-Gleichgewicht ungültig
                 return true;
             }
         }
@@ -253,7 +255,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return getMixedPayoff(strat, player);
     }
 
-    private Vector getMixedPayoff(String strat, Player player) {
+    private Vector getMixedPayoff(String strat, Player player) {  //Gibt den Auszahlungsvektor an, wenn der Spieler die Strategie strat spielt und der andere Spieler gemischte Strategien spielt
         Strategy strategy = game.getStrategy(strat, player);
         Player otherPlayer = player.equals(game.getPlayer1()) ? game.getPlayer2() : game.getPlayer1();
         float aPayoff = 0;
@@ -272,7 +274,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return new Vector(getOptimalMixedPayoff(game.getPlayer1()), getOptimalMixedPayoff(game.getPlayer2()));
     }
 
-    private float getOptimalMixedPayoff(Player player) {
+    private float getOptimalMixedPayoff(Player player) {  //Gibt den Auszahlungsvektor zurück, wenn beide Spieler optimal mischen
         if (finalProbabilities == null) {
             return 0;
         }
@@ -289,7 +291,7 @@ public class MixedNashEquilibriumFinder implements Serializable {
         return MathHelper.round(payoff, 2);
     }
 
-    private List<Float> getMixedPayoffsOfOtherPlayer(Player player) {
+    private List<Float> getMixedPayoffsOfOtherPlayer(Player player) {  //Gibt die Auszahlungen des Gegenspielers zurück, wenn der Spieler mit den gemischten Wahrscheinlichkeiten spielt
         List<Strategy> ownStrategies = player.getStrategies();
         List<Strategy> otherStrategies = game.getOpponentStrategies(player);
         List<Float> payoffs = new ArrayList<>();

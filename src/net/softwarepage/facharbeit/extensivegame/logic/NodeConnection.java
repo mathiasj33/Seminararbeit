@@ -2,7 +2,7 @@ package net.softwarepage.facharbeit.extensivegame.logic;
 
 import java.util.Objects;
 
-public class NodeConnection {
+public class NodeConnection {  //Eine Verbindung zweier Knotenpunkte
     private final String name;
     private final StrategyNode parent;
     private final Node child;

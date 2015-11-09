@@ -3,7 +3,7 @@ package net.softwarepage.facharbeit.normalgame.logic;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class NormalGameTest {
+public class NormalGameTest { //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
 
     private Player player1;
     private Player player2;

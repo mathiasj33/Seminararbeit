@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 
-public class PlayerTest {
+public class PlayerTest { //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
     
     @Test(expected = IllegalArgumentException.class)
     public void testConstructor() {

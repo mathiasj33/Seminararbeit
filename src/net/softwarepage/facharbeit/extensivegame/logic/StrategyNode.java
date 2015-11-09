@@ -3,7 +3,7 @@ package net.softwarepage.facharbeit.extensivegame.logic;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StrategyNode extends Node {
+public class StrategyNode extends Node {  //Ein Knotenpunkt, der kein Endpunkt ist
 
     private final List<NodeConnection> connections = new ArrayList<>();
 

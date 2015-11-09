@@ -3,7 +3,7 @@ package net.softwarepage.facharbeit.extensivegame.logic;
 import java.util.Objects;
 import java.util.UUID;
 
-public abstract class Node {
+public abstract class Node {  //Ein Knotenpunkt
     protected String name;
     protected StrategyNode parent;
     private UUID uuid;

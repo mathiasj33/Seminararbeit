@@ -13,7 +13,7 @@ import org.junit.Test;
  *
  * @author Mathias
  */
-public class ListHelperTest {
+public class ListHelperTest { //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
     
     public ListHelperTest() {
     }

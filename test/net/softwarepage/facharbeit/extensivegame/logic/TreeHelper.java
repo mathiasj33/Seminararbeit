@@ -1,8 +1,6 @@
 package net.softwarepage.facharbeit.extensivegame.logic;
 
-import net.softwarepage.facharbeit.normalgame.logic.Vector;
-
-public class TreeHelper {
+public class TreeHelper { //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
     public static Tree getTestTree() {
         StrategyNode sp1 = getPlayer1Node();
 

@@ -12,7 +12,7 @@ import org.junit.Test;
  *
  * @author Mathias
  */
-public class TreeTest {
+public class TreeTest { //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
 
     private final Tree tree;
 

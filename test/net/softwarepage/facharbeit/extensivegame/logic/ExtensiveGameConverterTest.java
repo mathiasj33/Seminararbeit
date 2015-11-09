@@ -17,7 +17,7 @@ import org.junit.Test;
  *
  * @author Mathias
  */
-public class ExtensiveGameConverterTest {
+public class ExtensiveGameConverterTest {  //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
     
     private Tree tree;
 

@@ -13,7 +13,7 @@ import org.junit.Test;
  *
  * @author Mathias
  */
-public class MixedNashEquilibriumFinderTest {
+public class MixedNashEquilibriumFinderTest { //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
 
     private NormalGame game;
     private Player player1;
@@ -73,7 +73,7 @@ public class MixedNashEquilibriumFinderTest {
         NormalGame game2 = games.get(0);
         
         Assert.assertFalse(game.isSubGameEquilibriumValid(game1));
-        Assert.assertTrue(game.isSubGameEquilibriumValid(game2));  //Hier weiter machen -> stimmt die Berechnung (in Seminararbeit per Hand anderes Ergebnis!?)
+        Assert.assertTrue(game.isSubGameEquilibriumValid(game2));
         
         setupSubGame3();
         game.findMixedNashEquilibria();

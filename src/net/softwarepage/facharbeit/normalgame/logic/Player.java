@@ -23,7 +23,7 @@ public class Player implements Serializable {
     }
     
     public Player(List<Strategy> strategies) {
-        List<String> names = strategies.stream().map(s -> s.getName()).collect(Collectors.toList());
+        List<String> names = strategies.stream().map(s -> s.getName()).collect(Collectors.toList());  //Keine Strategie darf den selben Namen wie eine andere Strategie desselben Spielers haben
         if(ListHelper.isElementTwice(names)) {
             throw new IllegalArgumentException("Same strategy twice!");
         }

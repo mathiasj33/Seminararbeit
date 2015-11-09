@@ -3,7 +3,7 @@ package net.softwarepage.facharbeit.normalgame.logic;
 import java.io.Serializable;
 import java.util.Comparator;
 
-public class StrategyComparator implements Comparator<Strategy>, Serializable {
+public class StrategyComparator implements Comparator<Strategy>, Serializable {  //Dient dazu, die Strategien zu sortieren
 
     private final NormalGame game;
 

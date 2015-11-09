@@ -1,11 +1,14 @@
 package net.softwarepage.facharbeit.extensivegame.logic;
 
-import java.util.Objects;
 import net.softwarepage.facharbeit.normalgame.logic.Vector;
 
-public class VectorNode extends Node {
+public class VectorNode extends Node {  //Ein Knotenpunkt, der ein Endpunkt ist
     private Vector payoff;
 
+    public VectorNode(Vector payoff) {
+        this.payoff = payoff;
+    }
+    
     public VectorNode(float first, float second) {
         super();
         this.payoff = new Vector(first, second);

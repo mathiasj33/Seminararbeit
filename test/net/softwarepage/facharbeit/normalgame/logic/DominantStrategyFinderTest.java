@@ -12,7 +12,7 @@ import org.junit.Test;
  *
  * @author Mathias
  */
-public class DominantStrategyFinderTest {
+public class DominantStrategyFinderTest { //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
 
     private NormalGame game;
     private Player player1;

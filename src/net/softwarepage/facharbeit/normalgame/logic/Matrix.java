@@ -8,7 +8,7 @@ public class Matrix implements Serializable {
     private final Player player1;
     private final Player player2;
     private final HashMap<StrategyPair, Vector> vectors = new HashMap<>();
-    private int horizontalPosition = -1;
+    private int horizontalPosition = -1;  //Das hier wird nur intern benötigt um die Vektoren mit den richtigen StrategyPairs zu verbinden
     private int verticalPosition = 0;
 
     public Matrix(Player firstPlayer, Player secondPlayer) {
@@ -77,24 +77,5 @@ public class Matrix implements Serializable {
 
     public Player getPlayer2() {
         return player2;
-    }
-    
-    @Override
-    public String toString() {
-        String s = "";
-        for (Strategy fStrat : player1.getStrategies()) {
-            for (Strategy sStrat : player2.getStrategies()) {
-                s += player1.getName() + ": " + fStrat + "; " + player2.getName() + ": " + sStrat + " -> ";
-                s += getVector(fStrat, sStrat) + " ";
-            }
-        }
-        return s;
-//        StringBuilder builder = new StringBuilder();
-//        builder.append("Player 1: ");
-//        player1.getStrategies().forEach(s -> builder.append(s.getName()).append(", "));
-//        builder.append("; Player 2: ");
-//        player2.getStrategies().forEach(s -> builder.append(s.getName()).append(", "));
-//        builder.append("\n");
-//        return builder.toString();
     }
 }

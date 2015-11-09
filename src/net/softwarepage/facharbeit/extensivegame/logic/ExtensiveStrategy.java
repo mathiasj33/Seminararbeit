@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class ExtensiveStrategy {
+public class ExtensiveStrategy {  //Ein Strategie in der Extensivform
     private final List<NodeConnection> decisions = new ArrayList<>();
     
     public ExtensiveStrategy(NodeConnection... decisions) {

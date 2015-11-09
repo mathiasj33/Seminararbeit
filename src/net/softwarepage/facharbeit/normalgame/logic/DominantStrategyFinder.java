@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.softwarepage.facharbeit.normalgame.helpers.ListHelper;
 
-public class DominantStrategyFinder implements Serializable {
+public class DominantStrategyFinder implements Serializable {  //Findet dominierte Strategien
     
     private final NormalGame game;
 
@@ -23,7 +23,7 @@ public class DominantStrategyFinder implements Serializable {
                     continue;
                 }
                 boolean weaklyDominated = false;
-                List<Strategy> possiblyDominated = new ArrayList<>();
+                List<Strategy> possiblyDominated = new ArrayList<>();  //Die Strategien, die eine geringere Auszahlung haben, werden in dieser Liste gespeichert
                 for (Strategy opponentStrategy : opponentStrategies) {
                     StrategyPair firstPair = new StrategyPair(ownStrategy, opponentStrategy);
                     StrategyPair secondPair = new StrategyPair(ownStrategy2, opponentStrategy);
@@ -35,8 +35,8 @@ public class DominantStrategyFinder implements Serializable {
                         weaklyDominated = true;
                     }
                 }
-                if (ListHelper.isListOfSameElements(possiblyDominated) && !possiblyDominated.isEmpty()) {
-                    Strategy dominatedStrat = possiblyDominated.get(0);
+                if (ListHelper.isListOfSameElements(possiblyDominated) && !possiblyDominated.isEmpty()) {  //Wenn immer dieselbe Strategie in der Liste ist, so hat sie immer eine kleiner Auszahlung
+                    Strategy dominatedStrat = possiblyDominated.get(0);                                    //als die Strategie mit der sie verglichen wird und ist somit dominiert
                     if (!dominatedStrategies.contains(dominatedStrat)) {
                         StrategyType type = weaklyDominated ? StrategyType.WeaklyDominated : StrategyType.Dominated;
                         dominatedStrat.setType(type);
@@ -48,7 +48,7 @@ public class DominantStrategyFinder implements Serializable {
         return dominatedStrategies;
     }
     
-    private boolean payoffIsLess(Player player, StrategyPair firstStrategyPair, StrategyPair secondStrategyPair) {
+    private boolean payoffIsLess(Player player, StrategyPair firstStrategyPair, StrategyPair secondStrategyPair) {  //prüft, ob die Auszahlung beim ersten Strategiepaar kleiner ist als beim zweiten
         return game.getPayoff(player, firstStrategyPair.getStrategy1(), firstStrategyPair.getStrategy2())
                 < game.getPayoff(player, secondStrategyPair.getStrategy1(), secondStrategyPair.getStrategy2());
     }

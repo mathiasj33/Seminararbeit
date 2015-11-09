@@ -3,7 +3,7 @@ package net.softwarepage.facharbeit.normalgame.logic;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class PureNashEquilibriumFinderTest {
+public class PureNashEquilibriumFinderTest { //Verschiedene automatisierte Tests um die Algorithmen zu überprüfen
     
     private NormalGame game;
     private Player player1;

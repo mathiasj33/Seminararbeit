@@ -1,6 +1,6 @@
 package net.softwarepage.facharbeit.normalgame.logic;
 
-public class PureNashEquilibrium implements NashEquilibrium {
+public class PureNashEquilibrium implements NashEquilibrium {  //Nash-Gleichgewicht in reinen Strategien
     
     private NashEquilibriumType type;
     private final Strategy firstStrat;

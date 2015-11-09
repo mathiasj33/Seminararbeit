@@ -8,9 +8,9 @@ import java.util.Map;
 public class NormalGame implements Serializable {
 
     private final Matrix matrix;
-    private final DominantStrategyFinder dominantStrategyFinder = new DominantStrategyFinder(this);
-    private final PureNashEquilibriumFinder pureNashFinder = new PureNashEquilibriumFinder(this);
-    private final MixedNashEquilibriumFinder mixedNashFinder = new MixedNashEquilibriumFinder(this);
+    private final DominantStrategyFinder dominantStrategyFinder = new DominantStrategyFinder(this);  //Mit dem DominantStrategyFinder können dominierte Strategien gefunden werden
+    private final PureNashEquilibriumFinder pureNashFinder = new PureNashEquilibriumFinder(this);  //Hiermit können Nash-Gleichgewichte in reinen Strategien gefunden werden
+    private final MixedNashEquilibriumFinder mixedNashFinder = new MixedNashEquilibriumFinder(this);  //Hiermit können Nash-Gleichgewicht in gemischten Strategien gefunden werden
 
     public NormalGame(Player player1, Player player2) {
         matrix = new Matrix(player1, player2);
@@ -31,7 +31,7 @@ public class NormalGame implements Serializable {
         }
     }
 
-    public void addStrategy(String name, Player player) {
+    public void addStrategy(String name, Player player) {  //Eine neue Strategie zum Spiel hinzufügen
         List<Strategy> opponentStrategies = getOpponentStrategies(player);
         Strategy newStrategy = new Strategy(name);
         player.addStrategy(newStrategy);
@@ -42,11 +42,11 @@ public class NormalGame implements Serializable {
             } else {
                 pair = new StrategyPair(opponentStrategy, newStrategy);
             }
-            matrix.setVector(pair, new Vector(0, 0));
+            matrix.setVector(pair, new Vector(0, 0));  //Die Auszahlungsvektoren bei der neuen Strategie werden auf (0;0) gesetzt
         }
     }
 
-    public void removeStrategy(String name, Player player) {
+    public void removeStrategy(String name, Player player) {  //Eine Strategie entfernen
         if (player.getStrategies().size() == 1) {
             throw new IllegalStateException("Trying to remove last strategy from a player");
         }
@@ -112,7 +112,7 @@ public class NormalGame implements Serializable {
         return true;
     }
 
-    public float getPayoff(Player player, Strategy strategy1, Strategy strategy2) {
+    public float getPayoff(Player player, Strategy strategy1, Strategy strategy2) {  //Liefert die Auszahlung für einen Spieler bei einem Strategienpaar
         Vector payoff = matrix.getVector(strategy1, strategy2);
         if (player.equals(matrix.getPlayer1())) {
             return payoff.getFirst();
@@ -121,7 +121,7 @@ public class NormalGame implements Serializable {
         }
     }
     
-    public List<Float> getPayoffsForOpponentStrategy(Player player, Strategy opponentStrategy) {
+    public List<Float> getPayoffsForOpponentStrategy(Player player, Strategy opponentStrategy) { //Gibt die Auszahlungen für jede Strategie zurück, wenn der Gegenspieler opponentStrategy spielt
         List<Strategy> ownStrats = player.getStrategies();
         List<Float> values = new ArrayList<>();
         ownStrats.forEach((ownStrat) -> {

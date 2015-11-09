@@ -3,7 +3,7 @@ package net.softwarepage.facharbeit.normalgame.logic;
 import java.util.List;
 import java.util.Map;
 
-public class MixedNashEquilibrium implements NashEquilibrium {
+public class MixedNashEquilibrium implements NashEquilibrium {  //Ein Nash-Gleichgewicht in gemischten Strategien
 
     private final Map<Strategy, Float> probabilities;
 
